@@ -48,24 +48,34 @@ public class Main implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        String player = "Merfee";
+        String[] players = new String[] {"ST Diffusor", "ST Juicy", "ST Snag", "ST Subby", "ST Zecuity", "Merfee", "JamieAllOver"};
+//        String[] players = new String[] {"Merfee", "JamieAllOver"};
 
-        PlayerScores oldScoresData = stinkyTootersDataStore.getHiscore(player);
+        for (String player : players) {
+            PlayerScores oldScoresData = stinkyTootersDataStore.getHiscore(player);
 
-        OsrsHiscoreLiteData oldScores = new OsrsHiscoreLiteData();
-        if (oldScoresData != null) {
-            oldScores = oldScoresData.getScores();
-        }
+            OsrsHiscoreLiteData oldScores = new OsrsHiscoreLiteData();
+            if (oldScoresData != null) {
+                oldScores = oldScoresData.getScores();
+            }
 
-        OsrsHiscoreLiteData newScores = osrsHiscoreLiteClient.getHiscoresForUser(player);
-        stinkyTootersDataStore.updateHiscore(player, newScores);
 
-        Map<Skill, HiscoreDiff> differenceMap = OsrsHiscoreLiteDataComparator.compare(oldScores, newScores);
-        if (!differenceMap.isEmpty()) {
-            String message = createUpdateMessage(player, differenceMap);
-            stinkyTooterDiscordClient.sendMessage(message) ;
-        } else {
-            stinkyTooterDiscordClient.sendMessage(">>> :poop: **" + player + "**\n\n*Gained no xp, what a stinky tootin' loser.*");
+            OsrsHiscoreLiteData newScores = null;
+            try {
+                newScores = osrsHiscoreLiteClient.getHiscoresForUser(player);
+            } catch (Exception ex) {
+                stinkyTooterDiscordClient.sendMessage(">?? :poop: **" + player + " **\n\nIs not on the hiscores yet, quit spending so much time tootin!");
+                return;
+            }
+            stinkyTootersDataStore.updateHiscore(player, newScores);
+
+            Map<Skill, HiscoreDiff> differenceMap = OsrsHiscoreLiteDataComparator.compare(oldScores, newScores);
+            if (!differenceMap.isEmpty()) {
+                String message = createUpdateMessage(player, differenceMap);
+                stinkyTooterDiscordClient.sendMessage(message);
+            } else {
+                stinkyTooterDiscordClient.sendMessage(">>> :poop: **" + player + "**\n\n*Gained no xp, what a stinky tootin' loser.*");
+            }
         }
     }
 
