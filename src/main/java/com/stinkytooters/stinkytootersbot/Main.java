@@ -49,7 +49,6 @@ public class Main implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         String[] players = new String[] {"ST Diffusor", "ST Juicy", "ST Snag", "ST Subby", "ST Zecuity", "Merfee", "JamieAllOver"};
-//        String[] players = new String[] {"Merfee", "JamieAllOver"};
 
         for (String player : players) {
             PlayerScores oldScoresData = stinkyTootersDataStore.getHiscore(player);
