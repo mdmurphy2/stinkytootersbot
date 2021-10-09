@@ -8,7 +8,6 @@ import org.springframework.core.io.Resource;
 
 import javax.inject.Named;
 import java.io.*;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
@@ -27,6 +26,7 @@ public class StinkyTootersDataStore {
    private Map<String, PlayerScores> hiscores;
 
    public StinkyTootersDataStore(@Value("${data.file}") String dataFilePath) throws URISyntaxException, IOException {
+       dataFilePath = System.getProperty("user.home") + "/resources" + dataFilePath;
        initializeDataStore(dataFilePath);
    }
 
