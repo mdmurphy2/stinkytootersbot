@@ -1,0 +1,3 @@
+echo ###ACTIVATING###
+wd=pwd
+echo 0 */12 * * * leo cd $wd && cd .. && mvn package && java -jar target/stinkytootersbot*.jar > /etc/cron.d/stinkytootersbot-cron

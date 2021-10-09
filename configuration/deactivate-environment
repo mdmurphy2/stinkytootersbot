@@ -1,0 +1,2 @@
+echo ###DEACTIVATING###
+rm /etc/cron.d/stinkytootersbot-cron
