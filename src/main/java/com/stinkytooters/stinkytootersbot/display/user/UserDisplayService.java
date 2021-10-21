@@ -153,7 +153,9 @@ public class UserDisplayService {
         Hiscore oldScore = hiscores.get(HiscoreReference.OLD);
 
         Duration timeDifference = Duration.between(oldScore.getUpdateTime(), newScore.getUpdateTime());
-        bean.setHoursSinceLastUpdate(timeDifference.toHoursPart());
+        int days = (int)timeDifference.toDaysPart();
+        int hours = days * 24 + timeDifference.toHoursPart();
+        bean.setHoursSinceLastUpdate(hours);
         bean.setMinutesSinceLastUpdate(timeDifference.toMinutesPart());
 
         for (Skill skill : Skill.values()) {
