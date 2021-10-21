@@ -1,2 +1,4 @@
 echo ###ACTIVATING###
-echo "0 6 * * * leo cd $(pwd) && cd .. && mvn package && java -jar target/stinkytootersbot*.jar > out.log" > /etc/cron.d/stinkytootersbot-cron
+cd ..
+mvn package
+java -jar target/stinkytootersbot*.jar &

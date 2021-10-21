@@ -1,4 +1,4 @@
-package com.stinkytooters.stinkytootersbot.rsapi.hiscores;
+package com.stinkytooters.stinkytootersbot.api.osrs.hiscores;
 
 public class OsrsHiscoreLiteDataEntry {
 
@@ -13,9 +13,9 @@ public class OsrsHiscoreLiteDataEntry {
     }
 
     public OsrsHiscoreLiteDataEntry() {
-        rank = 0;
-        level = 0;
-        xp = 0;
+        rank = -1;
+        level = -1;
+        xp = -1;
     }
 
     public int getRank() {

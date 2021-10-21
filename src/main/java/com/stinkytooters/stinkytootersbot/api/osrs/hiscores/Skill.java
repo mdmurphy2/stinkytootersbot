@@ -1,4 +1,4 @@
-package com.stinkytooters.stinkytootersbot.rsapi.hiscores;
+package com.stinkytooters.stinkytootersbot.api.osrs.hiscores;
 
 public enum Skill {
     OVERALL,

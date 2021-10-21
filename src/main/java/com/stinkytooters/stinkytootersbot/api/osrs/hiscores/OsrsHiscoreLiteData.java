@@ -1,11 +1,11 @@
-package com.stinkytooters.stinkytootersbot.rsapi.hiscores;
+package com.stinkytooters.stinkytootersbot.api.osrs.hiscores;
 
 import java.util.Map;
 import java.util.TreeMap;
 
 public class OsrsHiscoreLiteData {
 
-    private Map<Skill, OsrsHiscoreLiteDataEntry> hiscores;
+    private final Map<Skill, OsrsHiscoreLiteDataEntry> hiscores;
 
     public OsrsHiscoreLiteData() {
         this.hiscores = new TreeMap<>();

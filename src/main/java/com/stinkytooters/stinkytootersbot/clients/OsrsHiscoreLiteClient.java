@@ -1,32 +1,38 @@
 package com.stinkytooters.stinkytootersbot.clients;
 
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
-import com.stinkytooters.stinkytootersbot.rsapi.hiscores.OsrsHiscoreLiteData;
-import com.stinkytooters.stinkytootersbot.rsapi.hiscores.OsrsHiscoreObjectMapper;
+import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.OsrsHiscoreLiteData;
+import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.OsrsHiscoreObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.util.Objects;
+import java.util.Optional;
 
 @Named
-public class OsrsHiscoreLiteClient {
+public class OsrsHiscoreLiteClient extends BaseHttpClient {
+
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private static final String HISCORE_LITE_ENDPOINT = "https://secure.runescape.com/m=hiscore_oldschool/index_lite.ws?player=%s";
 
-    @Inject
-    private OkHttpClient httpClient;
-
-    @Inject
     private OsrsHiscoreObjectMapper osrsHiscoreObjectMapper;
 
-    public OsrsHiscoreLiteData getHiscoresForUser(String user) throws IOException {
-        String url = String.format(HISCORE_LITE_ENDPOINT, user);
-        Request request = new Request.Builder().url(url).build();
-        Response response = httpClient.newCall(request).execute();
+    @Inject
+    public OsrsHiscoreLiteClient(OsrsHiscoreObjectMapper osrsHiscoreObjectMapper) {
+        this.osrsHiscoreObjectMapper = Objects.requireNonNull(osrsHiscoreObjectMapper, "OsrsHiscoreObjectMapper is required.");
+    }
 
-        return osrsHiscoreObjectMapper.deserialize(response.body().byteStream());
+    public Optional<OsrsHiscoreLiteData> getHiscoresForUser(String user) {
+        try  {
+            Response response = get(String.format(HISCORE_LITE_ENDPOINT, user));
+            return Optional.ofNullable(osrsHiscoreObjectMapper.deserialize(response.body().byteStream()));
+        } catch (Exception ex) {
+            return Optional.empty();
+        }
     }
 
 }
