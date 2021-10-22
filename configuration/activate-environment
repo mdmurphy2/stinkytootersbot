@@ -1,4 +1,5 @@
 echo ###ACTIVATING###
 cd ..
+mkdir logs
 mvn package
 java -Dspring.profiles.active=default,prod -jar target/stinkytootersbot*.jar > logs/application.log &
