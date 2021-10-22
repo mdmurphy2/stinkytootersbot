@@ -1,4 +1,4 @@
 echo ###ACTIVATING###
 cd ..
 mvn package
-java -Dspring.profiles.active=default,prod -jar target/stinkytootersbot*.jar &
+java -Dspring.profiles.active=default,prod -jar target/stinkytootersbot*.jar > logs/application.log &
