@@ -20,7 +20,7 @@ import java.sql.SQLException;
 @Configuration
 public class SpringConfiguration {
 
-    @Value("${token}")
+    @Value("${discord.token}")
     private String token;
 
     @Value("${channel.id}")
@@ -35,11 +35,12 @@ public class SpringConfiguration {
     }
 
     @Bean
-    public DataSource stinkyTootersDataSource(@Value("${database.ip}") String databaseIp) {
+    public DataSource stinkyTootersDataSource(@Value("${database.ip}") String databaseIp,
+                                              @Value("${database.password}") String databasePassword) {
         PGSimpleDataSource source = new PGSimpleDataSource();
-        source.setUrl(String.format("jdbc:postgresql://%s/p1pg", databaseIp));
+        source.setUrl(databaseIp);
         source.setUser("postgres");
-        source.setPassword("***REMOVED***");
+        source.setPassword(databasePassword);
         return source;
     }
 
