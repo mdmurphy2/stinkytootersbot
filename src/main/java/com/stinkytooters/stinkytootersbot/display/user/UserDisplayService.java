@@ -172,13 +172,13 @@ public class UserDisplayService {
                 String skillDisplayString = capitalizeFirstLetter(skill.name());
                 bean.addXpGained(skillDisplayString, NumberFormat.getInstance().format(newXp - oldXp) + " xp");
                 bean.addLevelsGained(skillDisplayString, newLevels - oldLevels + " L");
-                if (oldRank - newRank > 0) {
-                    bean.addRanksGained(skillDisplayString, NumberFormat.getInstance().format(oldRank - newRank) + " R");
-                } else {
-                    if (skill != Skill.OVERALL) {
-                        bean.addRanksGained(skillDisplayString, "0 R, NEW");
+                if (oldRank - newRank != 0) {
+                    String updatedRank = NumberFormat.getInstance().format(oldRank - newRank) + " R";
+                    if (oldRank == -1) {
+                        bean.addRanksGained(skillDisplayString, updatedRank + ", NEW");
+
                     } else {
-                        bean.addRanksGained(skillDisplayString, "0 R");
+                        bean.addRanksGained(skillDisplayString, NumberFormat.getInstance().format(oldRank - newRank) + " R");
                     }
                 }
             }
