@@ -176,10 +176,11 @@ public class UserDisplayService {
                     String updatedRank = NumberFormat.getInstance().format(oldRank - newRank) + " R";
                     if (oldRank == -1) {
                         bean.addRanksGained(skillDisplayString, updatedRank + ", NEW");
-
                     } else {
-                        bean.addRanksGained(skillDisplayString, NumberFormat.getInstance().format(oldRank - newRank) + " R");
+                        bean.addRanksGained(skillDisplayString, updatedRank);
                     }
+                } else {
+                    bean.addRanksGained(skillDisplayString, "0 R");
                 }
             }
         }
