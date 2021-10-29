@@ -140,7 +140,7 @@ public class UserDisplayService {
             Map<HiscoreReference, Hiscore> hiscores = userUpdateService.updateHiscoresFor(user, now);
             return makeHiscoreDisplayBean(user, hiscores).getMessage();
         } catch (Exception ex) {
-            logger.error("An error occurred while updating user: ", ex);
+            logger.error("An error occurred while updating user: {}", username, ex);
             return GENERIC_ERROR;
         }
     }
