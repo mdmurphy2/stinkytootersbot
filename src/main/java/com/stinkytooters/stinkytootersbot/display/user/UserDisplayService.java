@@ -4,6 +4,7 @@ import com.stinkytooters.stinkytootersbot.api.internal.exception.ServiceExceptio
 import com.stinkytooters.stinkytootersbot.api.internal.hiscore.Hiscore;
 import com.stinkytooters.stinkytootersbot.api.internal.user.User;
 import com.stinkytooters.stinkytootersbot.api.internal.user.UserBuilder;
+import com.stinkytooters.stinkytootersbot.api.internal.user.UserStatus;
 import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.OsrsHiscoreLiteData;
 import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.Skill;
 import com.stinkytooters.stinkytootersbot.clients.OsrsHiscoreLiteClient;
@@ -68,9 +69,13 @@ public class UserDisplayService {
             return String.format(USER_NOT_FOUND_TEMPLATE, username);
         }
 
-        User user = UserBuilder.newBuilder().name(username).build();
+        User user = UserBuilder.newBuilder().name(username).status(UserStatus.ACTIVE).build();
         try {
-            userService.createUser(user);
+            if (userExists(user)) {
+                userService.saveUser(user);
+            } else {
+                userService.createUser(user);
+            }
         } catch (ServiceException ex) {
             return String.format(USER_ALREADY_TRACKED_TEMPLATE, username);
         } catch (Exception ex) {
@@ -80,8 +85,8 @@ public class UserDisplayService {
         return String.format(USER_ADDED_SUCCESSFULLY_TEMPLATE, username);
     }
 
-    public String removeUser(String message) {
-        logger.info("Adding user: {}", message);
+    public String inactivateUser(String message) {
+        logger.info("Inactivating user: {}", message);
         String[] parts = message.split(" ");
         if (parts.length < 2) {
             return REMOVE_USER_USAGE;
@@ -90,9 +95,9 @@ public class UserDisplayService {
         String username = Arrays.stream(parts, 1, parts.length)
                 .collect(Collectors.joining(" "));
 
-        User user = UserBuilder.newBuilder().name(username).build();
+        User user = UserBuilder.newBuilder().name(username).status(UserStatus.INACTIVE).build();
         try {
-            userService.deleteUser(user);
+            userService.saveUser(user);
         } catch (Exception ex) {
             return GENERIC_ERROR;
         }
@@ -214,5 +219,14 @@ public class UserDisplayService {
 
     private String capitalizeFirstLetter(String string) {
        return string.substring(0, 1).toUpperCase() + string.toLowerCase().substring(1);
+    }
+
+    private boolean userExists(User user) {
+        try {
+            userService.getUser(user);
+            return true;
+        } catch (ServiceException ex) {
+            return false;
+        }
     }
 }

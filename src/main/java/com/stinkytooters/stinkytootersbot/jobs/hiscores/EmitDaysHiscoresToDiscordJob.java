@@ -2,6 +2,7 @@ package com.stinkytooters.stinkytootersbot.jobs.hiscores;
 
 import com.stinkytooters.stinkytootersbot.api.internal.hiscore.Hiscore;
 import com.stinkytooters.stinkytootersbot.api.internal.user.User;
+import com.stinkytooters.stinkytootersbot.api.internal.user.UserStatus;
 import com.stinkytooters.stinkytootersbot.clients.StinkyTooterDiscordClient;
 import com.stinkytooters.stinkytootersbot.display.beans.HiscoreDisplayBean;
 import com.stinkytooters.stinkytootersbot.display.user.UserDisplayService;
@@ -61,12 +62,14 @@ public class EmitDaysHiscoresToDiscordJob implements Job {
         List<User> users = userService.getAllUsers();
 
         for (User user : users) {
-            try {
-                Map<UserUpdateService.HiscoreReference, Hiscore> oldNew = userUpdateService.updateHiscoresFor(user, oneDayAgo);
-                HiscoreDisplayBean displayBean = userDisplayService.makeHiscoreDisplayBean(user, oldNew);
-                stinkyTootersDiscordClient.sendMessage(channelId, displayBean.getMessage());
-            } catch (Exception ex) {
-                logger.error("Failed to emit hiscores for user ({})", user, ex);
+            if (user.getStatus() == UserStatus.ACTIVE) {
+                try {
+                    Map<UserUpdateService.HiscoreReference, Hiscore> oldNew = userUpdateService.updateHiscoresFor(user, oneDayAgo);
+                    HiscoreDisplayBean displayBean = userDisplayService.makeHiscoreDisplayBean(user, oldNew);
+                    stinkyTootersDiscordClient.sendMessage(channelId, displayBean.getMessage());
+                } catch (Exception ex) {
+                    logger.error("Failed to emit hiscores for user ({})", user, ex);
+                }
             }
         }
 

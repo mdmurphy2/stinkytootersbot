@@ -1,6 +1,7 @@
 package com.stinkytooters.stinkytootersbot.jobs.hiscores;
 
 import com.stinkytooters.stinkytootersbot.api.internal.user.User;
+import com.stinkytooters.stinkytootersbot.api.internal.user.UserStatus;
 import com.stinkytooters.stinkytootersbot.service.user.UserService;
 import com.stinkytooters.stinkytootersbot.service.user.UserUpdateService;
 import org.quartz.Job;
@@ -39,7 +40,9 @@ public class HydrateHiscoresJob implements Job {
     private void hydrateUsers(List<User> users) {
         for (User user : users) {
             try {
-                hydrate(user);
+                if (user.getStatus() == UserStatus.ACTIVE) {
+                    hydrate(user);
+                }
             } catch (Exception ex) {
                 logger.warn("Failed to hydrate user: {}", user);
             }

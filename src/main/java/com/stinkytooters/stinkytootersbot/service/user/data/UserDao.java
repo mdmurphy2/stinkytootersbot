@@ -28,9 +28,9 @@ public class UserDao {
     private static final RowMapper<UserData> userRowMapper = new UserRowMapper();
 
     private static String INSERT_USER = "insert into %s.users (usr_name) values (lower(:name))";
+    private static String UPDATE_USER = "update %s.users set usr_status = :status where usr_name = lower(:name)";
     private static String SELECT_USER_BY_NAME = "select * from %s.users where usr_name = lower(:name)";
     private static String SELECT_ALL_USERS = "select * from %s.users";
-    private static String DELETE_USER = "delete from %s.users where usr_name = lower(:name)";
 
     private NamedParameterJdbcTemplate namedJdbcTemplate;
 
@@ -48,6 +48,13 @@ public class UserDao {
         }
     }
 
+    public void updateUser(User user) {
+        int inserted = namedJdbcTemplate.update(UPDATE_USER, getParameters(user));
+        if (inserted != 1) {
+            throw new DaoException("Updated (" + inserted + ") users. Expected 1.");
+        }
+    }
+
     public Optional<UserData> getUser(User user) {
         try {
             return Optional.ofNullable(namedJdbcTemplate.queryForObject(SELECT_USER_BY_NAME, getParameters(user), userRowMapper));
@@ -62,16 +69,10 @@ public class UserDao {
         return namedJdbcTemplate.query(SELECT_ALL_USERS, Collections.emptyMap(), userRowMapper);
     }
 
-    public void deleteUserByName(User user) {
-        int changed = namedJdbcTemplate.update(DELETE_USER, getParameters(user));
-        if (changed != 1) {
-            throw new DaoException("Deleted (" + changed + ") users. Expected 1, rolling back.");
-        }
-    }
-
     private MapSqlParameterSource getParameters(User user) {
         return new MapSqlParameterSource()
-                .addValue("name", user.getName(), Types.VARCHAR);
+                .addValue("name", user.getName(), Types.VARCHAR)
+                .addValue("status", user.getStatus().getCode(), Types.VARCHAR);
     }
 
     private static class UserRowMapper implements RowMapper<UserData> {
@@ -81,14 +82,15 @@ public class UserDao {
             UserData userData = new UserData();
             userData.setId(rs.getLong("usr_id"));
             userData.setName(rs.getString("usr_name"));
+            userData.setStatus(rs.getString("usr_status"));
             return userData;
         }
     }
 
     private void populateSchema(String schema) {
         INSERT_USER = String.format(INSERT_USER, schema);
+        UPDATE_USER = String.format(UPDATE_USER, schema);
         SELECT_USER_BY_NAME = String.format(SELECT_USER_BY_NAME, schema);
         SELECT_ALL_USERS = String.format(SELECT_ALL_USERS, schema);
-        DELETE_USER = String.format(DELETE_USER, schema);
     }
 }

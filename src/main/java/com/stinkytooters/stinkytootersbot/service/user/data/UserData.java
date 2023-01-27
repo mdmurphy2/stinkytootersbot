@@ -1,16 +1,21 @@
 package com.stinkytooters.stinkytootersbot.service.user.data;
 
 import com.stinkytooters.stinkytootersbot.api.internal.user.User;
+import com.stinkytooters.stinkytootersbot.api.internal.user.UserStatus;
+
+import java.util.StringJoiner;
 
 public class UserData {
 
     private long id;
     private String name;
+    private String status;
 
     public User toUser() {
         User user = new User();
         user.setId(id);
         user.setName(name);
+        user.setStatus(UserStatus.fromValue(status));
         return user;
     }
 
@@ -18,6 +23,7 @@ public class UserData {
         UserData userData = new UserData();
         userData.setId(user.getId());
         userData.setName(user.getName());
+        userData.setStatus(user.getStatus().getCode());
         return userData;
     }
 
@@ -37,12 +43,20 @@ public class UserData {
         this.name = name;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("UserData{");
-        sb.append("id=").append(id);
-        sb.append(", name='").append(name).append('\'');
-        sb.append('}');
-        return sb.toString();
+        return new StringJoiner(", ", UserData.class.getSimpleName() + "[", "]")
+                .add("id=" + id)
+                .add("name='" + name + "'")
+                .add("status='" + status + "'")
+                .toString();
     }
 }

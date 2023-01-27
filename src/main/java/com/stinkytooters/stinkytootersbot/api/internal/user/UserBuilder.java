@@ -22,6 +22,11 @@ public class UserBuilder {
         return this;
     }
 
+    public UserBuilder status(UserStatus status) {
+        user.setStatus(status);
+        return this;
+    }
+
     public User build() {
         User result = user;
         user = null;

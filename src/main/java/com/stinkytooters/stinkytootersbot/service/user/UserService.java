@@ -95,11 +95,11 @@ public class UserService {
     }
 
     @Transactional(rollbackFor = Throwable.class, propagation = Propagation.REQUIRED)
-    public void deleteUser(User user) {
+    public void saveUser(User user) {
         try {
-            userDao.deleteUserByName(user);
+            userDao.updateUser(user);
         } catch (Exception ex) {
-            String message = String.format("An unexpected error occurred, could not get all users. %s", ex.getMessage());
+            String message = String.format("An unexpected error occurred, could not save user. %s", ex.getMessage());
             logger.error(message, ex);
             throw new ServiceException(message);
         }
