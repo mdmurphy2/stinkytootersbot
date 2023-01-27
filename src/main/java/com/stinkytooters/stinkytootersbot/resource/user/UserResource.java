@@ -27,8 +27,13 @@ public class UserResource extends AbstractDiscordResource {
         return userDisplayService.updateUser(message);
     }
 
+    private String removeUser(String message) {
+        return userDisplayService.removeUser(message);
+    }
+
     private void addCommands() {
         addCommand("!useradd", this::addUser);
         addCommand("!userupdate", this::updateUser);
+        addCommand("!userremove", this::removeUser);
     }
 }

@@ -87,11 +87,22 @@ public class UserService {
             List<UserData> userData = userDao.getAllUsers();
             return userData.stream().map(UserData::toUser).collect(Collectors.toList());
         } catch (Exception ex) {
-            String message = String.format("An unexpected error occurred, could not get all users.");
+            String message = String.format("An unexpected error occurred, could not get all users.", ex.getMessage());
             logger.error(message, ex);
             throw new ServiceException(message);
         }
 
+    }
+
+    @Transactional(rollbackFor = Throwable.class, propagation = Propagation.REQUIRED)
+    public void deleteUser(User user) {
+        try {
+            userDao.deleteUserByName(user);
+        } catch (Exception ex) {
+            String message = String.format("An unexpected error occurred, could not get all users. %s", ex.getMessage());
+            logger.error(message, ex);
+            throw new ServiceException(message);
+        }
     }
 
 }

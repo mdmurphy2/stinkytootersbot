@@ -33,6 +33,9 @@ public class UserDisplayService {
     private static final String ADD_USER_USAGE = "Invalid syntax. Usage: !useradd <runescape username>";
     private static final String UPDATE_USER_USAGE = "Invalid syntax. Usage: !userupdate <runescape username> [-h|-d] <amount>";
 
+    private static final String REMOVE_USER_USAGE = "Invalid syntax. Usage: !userremove <runescape username>";
+    private static final String USER_REMOVED_SUCCESSFULLY_TEMPLATE = "User (%s) was successfully removed and is no longer being tracked.";
+
     private static final String USER_ALREADY_TRACKED_TEMPLATE = "User (%s) is already being tracked.";
     private static final String USER_ADDED_SUCCESSFULLY_TEMPLATE = "User (%s) was successfully added and is now being tracked.";
     private static final String USER_NOT_FOUND_TEMPLATE = "Could not start tracking user %s. That user could not be found" +
@@ -75,6 +78,27 @@ public class UserDisplayService {
         }
 
         return String.format(USER_ADDED_SUCCESSFULLY_TEMPLATE, username);
+    }
+
+    public String removeUser(String message) {
+        logger.info("Adding user: {}", message);
+        String[] parts = message.split(" ");
+        if (parts.length < 2) {
+            return REMOVE_USER_USAGE;
+        }
+
+        String username = Arrays.stream(parts, 1, parts.length)
+                .collect(Collectors.joining(" "));
+
+        User user = UserBuilder.newBuilder().name(username).build();
+        try {
+            userService.deleteUser(user);
+        } catch (Exception ex) {
+            return GENERIC_ERROR;
+        }
+
+        return String.format(USER_REMOVED_SUCCESSFULLY_TEMPLATE, username);
+
     }
 
     public String updateUser(String message) {

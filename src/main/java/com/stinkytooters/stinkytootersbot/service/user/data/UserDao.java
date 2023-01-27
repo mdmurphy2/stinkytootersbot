@@ -30,6 +30,7 @@ public class UserDao {
     private static String INSERT_USER = "insert into %s.users (usr_name) values (lower(:name))";
     private static String SELECT_USER_BY_NAME = "select * from %s.users where usr_name = lower(:name)";
     private static String SELECT_ALL_USERS = "select * from %s.users";
+    private static String DELETE_USER = "delete from %s.users where usr_name = lower(:name)";
 
     private NamedParameterJdbcTemplate namedJdbcTemplate;
 
@@ -61,6 +62,13 @@ public class UserDao {
         return namedJdbcTemplate.query(SELECT_ALL_USERS, Collections.emptyMap(), userRowMapper);
     }
 
+    public void deleteUserByName(User user) {
+        int changed = namedJdbcTemplate.update(DELETE_USER, getParameters(user));
+        if (changed != 1) {
+            throw new DaoException("Deleted (" + changed + ") users. Expected 1, rolling back.");
+        }
+    }
+
     private MapSqlParameterSource getParameters(User user) {
         return new MapSqlParameterSource()
                 .addValue("name", user.getName(), Types.VARCHAR);
@@ -81,5 +89,6 @@ public class UserDao {
         INSERT_USER = String.format(INSERT_USER, schema);
         SELECT_USER_BY_NAME = String.format(SELECT_USER_BY_NAME, schema);
         SELECT_ALL_USERS = String.format(SELECT_ALL_USERS, schema);
+        DELETE_USER = String.format(DELETE_USER, schema);
     }
 }
