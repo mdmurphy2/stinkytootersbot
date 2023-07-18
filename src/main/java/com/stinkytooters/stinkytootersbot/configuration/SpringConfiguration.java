@@ -1,8 +1,10 @@
 package com.stinkytooters.stinkytootersbot.configuration;
 
 import com.squareup.okhttp.OkHttpClient;
-import discord4j.core.DiscordClientBuilder;
-import discord4j.core.GatewayDiscordClient;
+import com.stinkytooters.stinkytootersbot.bot.DiscordBot;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
@@ -45,13 +47,13 @@ public class SpringConfiguration {
     }
 
     @Bean
-    public NamedParameterJdbcTemplate namedJdbcTemplate(DataSource stinkyTootersDataSource) throws SQLException {
-        return new NamedParameterJdbcTemplate(stinkyTootersDataSource);
+    public JDA discordClient() {
+        return JDABuilder.createDefault(token).build();
     }
 
     @Bean
-    public GatewayDiscordClient discordClient() {
-        return DiscordClientBuilder.create(token).build().login().block();
+    public NamedParameterJdbcTemplate namedJdbcTemplate(DataSource stinkyTootersDataSource) throws SQLException {
+        return new NamedParameterJdbcTemplate(stinkyTootersDataSource);
     }
 
     @Bean

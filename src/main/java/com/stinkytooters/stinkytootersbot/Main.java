@@ -1,7 +1,8 @@
 package com.stinkytooters.stinkytootersbot;
 
-import com.stinkytooters.stinkytootersbot.clients.StinkyTooterDiscordClient;
+import com.stinkytooters.stinkytootersbot.bot.DiscordBot;
 import com.stinkytooters.stinkytootersbot.jobs.SchedulingConfiguration;
+import com.stinkytooters.stinkytootersbot.jobs.hiscores.EmitDaysHiscoresToDiscordJob;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -15,10 +16,13 @@ import java.io.IOException;
 public class Main implements CommandLineRunner {
 
     @Inject
-    private StinkyTooterDiscordClient stinkyTooterDiscordClient;
+    private DiscordBot discordBot;
 
     @Inject
     private SchedulingConfiguration schedulingConfiguration;
+
+    @Inject
+    private EmitDaysHiscoresToDiscordJob emitDaysHiscoresToDiscordJob;
 
 
     public static void main(String[] args) throws IOException {
@@ -32,6 +36,7 @@ public class Main implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         schedulingConfiguration.schedule();
-        stinkyTooterDiscordClient.start();
+        discordBot.listen();
+        emitDaysHiscoresToDiscordJob.run();
     }
 }

@@ -35,7 +35,7 @@ public class SchedulingConfiguration {
             stinkyTootersScheduler.scheduleJob(
                     JobBuilder.newJob(EmitDaysHiscoresToDiscordJob.class)
                          .withIdentity("EmitDaysHiscoresToDiscordJob", "stinkytooters")
-                        .build(),
+                         .build(),
                     TriggerBuilder.newTrigger()
                             .withSchedule(CronScheduleBuilder.cronSchedule("0 0 6 * * ?"))
                             .build()
