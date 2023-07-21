@@ -13,6 +13,7 @@ import com.stinkytooters.stinkytootersbot.service.user.UserService;
 import com.sun.javafx.collections.ObservableListWrapper;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.embed.swing.JFXPanel;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Scene;
@@ -51,10 +52,13 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 @Named
@@ -67,7 +71,6 @@ public class GraphDisplayService {
     private static final String USAGE = "!graph [-d <daysBack>] [-m <minimumXpGained>]";
     private static final String UNEXPECTED_ERROR = "An unexpected error occurred while generating a graph, please try again.";
 
-    private final ExecutorService swingExecutor;
     private final HiscoreService hiscoreService;
     private final UserService userService;
 
@@ -75,7 +78,6 @@ public class GraphDisplayService {
     public GraphDisplayService(HiscoreService hiscoreService, UserService userService) {
         this.hiscoreService = Objects.requireNonNull(hiscoreService, "HiscoreService is required.");
         this.userService = Objects.requireNonNull(userService, "UserService is not required.");
-        this.swingExecutor = Executors.newSingleThreadExecutor(runnable -> new Thread(runnable, "swing-thread"));
     }
 
     public MessageCreateData createGraph(String command) {
@@ -172,11 +174,10 @@ public class GraphDisplayService {
         }
 
         LineChart<String, Integer> lineChart = createLineChartFromGraphViewBeans(graphViewBeans);
-        Future<byte[]> fileFuture = swingExecutor.submit(() -> writeLineChartToMemory(lineChart));
 
         byte[] file = null;
         try {
-            file = fileFuture.get(10, TimeUnit.SECONDS);
+            file = writeLineChartToMemory(lineChart).get();
         } catch (Exception ex) {
             String message = "An error occurred while writing line chart to disk. %s";
             message = String.format(message, ex.getMessage());
@@ -187,23 +188,25 @@ public class GraphDisplayService {
         return file;
     }
 
-    private byte[] writeLineChartToMemory(LineChart lineChart) throws InterruptedException {
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
+    private Future<byte[]> writeLineChartToMemory(LineChart lineChart) {
+        CompletableFuture<byte[]> future = new CompletableFuture<>();
         Platform.runLater(() -> {
                 Scene scene = new Scene(lineChart, 1024, 720);
                 lineChart.applyCss();
 
                 WritableImage writableImage = lineChart.snapshot(new SnapshotParameters(), new WritableImage(1024, 720));
 
+                final ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 try {
                     ImageIO.write(SwingFXUtils.fromFXImage(writableImage, null), "png", baos);
                 } catch (Exception ex) {
                     logger.error("An exception occurred while writing the file to disk.", ex);
                 }
+                logger.info("Finished writing to output stream. ({}).", baos.size());
+
+                future.complete(baos.toByteArray());
         });
-        Thread.sleep(2000);
-        return baos.toByteArray();
+        return future;
     }
 
     private LineChart<String, Integer> createLineChartFromGraphViewBeans(List<HiscoreGraphDisplayBean> hiscoreGraphDisplayBeans) {
