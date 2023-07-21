@@ -1,8 +1,8 @@
 package com.stinkytooters.stinkytootersbot;
 
 import com.stinkytooters.stinkytootersbot.bot.DiscordBot;
+import com.stinkytooters.stinkytootersbot.display.graph.GraphDisplayService;
 import com.stinkytooters.stinkytootersbot.jobs.SchedulingConfiguration;
-import com.stinkytooters.stinkytootersbot.jobs.hiscores.EmitDaysHiscoresToDiscordJob;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -22,7 +22,7 @@ public class Main implements CommandLineRunner {
     private SchedulingConfiguration schedulingConfiguration;
 
     @Inject
-    private EmitDaysHiscoresToDiscordJob emitDaysHiscoresToDiscordJob;
+    private GraphDisplayService graphDisplayService;
 
 
     public static void main(String[] args) throws IOException {
@@ -37,6 +37,5 @@ public class Main implements CommandLineRunner {
     public void run(String... args) throws Exception {
         schedulingConfiguration.schedule();
         discordBot.listen();
-        emitDaysHiscoresToDiscordJob.run();
     }
 }

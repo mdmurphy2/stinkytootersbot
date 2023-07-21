@@ -1,6 +1,8 @@
 package com.stinkytooters.stinkytootersbot.api.discord;
 
 
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+
 public interface Command {
-    String execute(String message);
+    MessageCreateData execute(String message);
 }

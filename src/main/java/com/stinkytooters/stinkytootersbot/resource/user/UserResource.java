@@ -2,6 +2,7 @@ package com.stinkytooters.stinkytootersbot.resource.user;
 
 import com.stinkytooters.stinkytootersbot.api.discord.AbstractDiscordResource;
 import com.stinkytooters.stinkytootersbot.display.user.UserDisplayService;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -19,15 +20,15 @@ public class UserResource extends AbstractDiscordResource {
         addCommands();
     }
 
-    public String addUser(String message) {
+    public MessageCreateData addUser(String message) {
         return userDisplayService.addUser(message);
     }
 
-    private String updateUser(String message) {
+    private MessageCreateData updateUser(String message) {
         return userDisplayService.updateUser(message);
     }
 
-    private String inactivateUser(String message) {
+    private MessageCreateData inactivateUser(String message) {
         return userDisplayService.inactivateUser(message);
     }
 

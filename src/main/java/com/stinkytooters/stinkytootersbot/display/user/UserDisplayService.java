@@ -12,6 +12,8 @@ import com.stinkytooters.stinkytootersbot.display.beans.HiscoreDisplayBean;
 import com.stinkytooters.stinkytootersbot.service.user.UserService;
 import com.stinkytooters.stinkytootersbot.service.user.UserUpdateService;
 import com.stinkytooters.stinkytootersbot.service.user.UserUpdateService.HiscoreReference;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,11 +55,11 @@ public class UserDisplayService {
         this.userUpdateService = Objects.requireNonNull(userUpdateService, "UserUpdateService is required.");
     }
 
-    public String addUser(String message) {
+    public MessageCreateData addUser(String message) {
         logger.info("Adding user: {}", message);
         String[] parts = message.split(" ");
         if (parts.length < 2) {
-            return ADD_USER_USAGE;
+            return createMessage(ADD_USER_USAGE);
         }
 
         String username = Arrays.stream(parts, 1, parts.length)
@@ -66,7 +68,7 @@ public class UserDisplayService {
         Optional<OsrsHiscoreLiteData> hiscoreData = osrsHiscoreLiteClient.getHiscoresForUser(username);
 
         if (hiscoreData.isEmpty()) {
-            return String.format(USER_NOT_FOUND_TEMPLATE, username);
+            return createMessage(String.format(USER_NOT_FOUND_TEMPLATE, username));
         }
 
         User user = UserBuilder.newBuilder().name(username).status(UserStatus.ACTIVE).build();
@@ -77,19 +79,19 @@ public class UserDisplayService {
                 userService.createUser(user);
             }
         } catch (ServiceException ex) {
-            return String.format(USER_ALREADY_TRACKED_TEMPLATE, username);
+            return createMessage(String.format(USER_ALREADY_TRACKED_TEMPLATE, username));
         } catch (Exception ex) {
-            return GENERIC_ERROR;
+            return createMessage(GENERIC_ERROR);
         }
 
-        return String.format(USER_ADDED_SUCCESSFULLY_TEMPLATE, username);
+        return createMessage(String.format(USER_ADDED_SUCCESSFULLY_TEMPLATE, username));
     }
 
-    public String inactivateUser(String message) {
+    public MessageCreateData inactivateUser(String message) {
         logger.info("Inactivating user: {}", message);
         String[] parts = message.split(" ");
         if (parts.length < 2) {
-            return REMOVE_USER_USAGE;
+            return createMessage(REMOVE_USER_USAGE);
         }
 
         String username = Arrays.stream(parts, 1, parts.length)
@@ -99,17 +101,17 @@ public class UserDisplayService {
         try {
             userService.saveUser(user);
         } catch (Exception ex) {
-            return GENERIC_ERROR;
+            return createMessage(GENERIC_ERROR);
         }
 
-        return String.format(USER_REMOVED_SUCCESSFULLY_TEMPLATE, username);
+        return createMessage(String.format(USER_REMOVED_SUCCESSFULLY_TEMPLATE, username));
 
     }
 
-    public String updateUser(String message) {
+    public MessageCreateData updateUser(String message) {
         String[] parts = message.split(" ");
         if (parts.length < 2) {
-            return UPDATE_USER_USAGE;
+            return createMessage(UPDATE_USER_USAGE);
         }
 
         boolean afterUsername = false;
@@ -119,18 +121,18 @@ public class UserDisplayService {
             char currentChar = parts[i].charAt(0);
             if (currentChar == '-') {
                 if (parts[i].length() < 2) {
-                   return UPDATE_USER_USAGE;
+                   return createMessage(UPDATE_USER_USAGE);
                 }
 
                 if (parts.length - 1 == i) {
-                    return UPDATE_USER_USAGE;
+                    return createMessage(UPDATE_USER_USAGE);
                 }
 
                 args.put(parts[i], parts[i++ + 1]);
                 afterUsername = true;
             } else {
                 if (afterUsername) {
-                    return UPDATE_USER_USAGE;
+                    return createMessage(UPDATE_USER_USAGE);
                 } else {
                     usernameParts.add(parts[i]);
                 }
@@ -138,7 +140,7 @@ public class UserDisplayService {
         }
 
         if (args.size() < 1 || !(args.containsKey("-d") || args.containsKey("-h")) ) {
-            return UPDATE_USER_USAGE;
+            return createMessage(UPDATE_USER_USAGE);
         }
 
 
@@ -149,7 +151,7 @@ public class UserDisplayService {
                 int amountNumber = Integer.parseInt(amount);
                 now = now.minus(amountNumber, ChronoUnit.DAYS);
             } catch (Exception ex) {
-                return UPDATE_USER_USAGE;
+                return createMessage(UPDATE_USER_USAGE);
             }
         }
 
@@ -159,7 +161,7 @@ public class UserDisplayService {
                 int amountNumber = Integer.parseInt(amount);
                 now = now.minus(amountNumber, ChronoUnit.HOURS);
             } catch (Exception ex) {
-                return UPDATE_USER_USAGE;
+                return createMessage(UPDATE_USER_USAGE);
             }
         }
 
@@ -167,10 +169,10 @@ public class UserDisplayService {
         try {
             User user = UserBuilder.newBuilder().name(username).build();
             Map<HiscoreReference, Hiscore> hiscores = userUpdateService.updateHiscoresFor(user, now);
-            return makeHiscoreDisplayBean(user, hiscores).getMessage();
+            return createMessage(makeHiscoreDisplayBean(user, hiscores).getMessage());
         } catch (Exception ex) {
             logger.error("An error occurred while updating user: {}", username, ex);
-            return GENERIC_ERROR;
+            return createMessage(GENERIC_ERROR);
         }
     }
 
@@ -228,5 +230,11 @@ public class UserDisplayService {
         } catch (ServiceException ex) {
             return false;
         }
+    }
+
+    private MessageCreateData createMessage(String message) {
+        return new MessageCreateBuilder()
+                .setContent(message)
+                .build();
     }
 }

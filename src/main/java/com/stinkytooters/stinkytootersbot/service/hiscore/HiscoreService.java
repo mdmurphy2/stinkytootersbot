@@ -16,8 +16,13 @@ import javax.inject.Named;
 import java.lang.invoke.MethodHandles;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Named
 public class HiscoreService {
@@ -48,6 +53,26 @@ public class HiscoreService {
             }
         } catch (Exception ex) {
             String message = String.format("An unexpected error occurred while getting the latest hiscore by userId (%d)", userId);
+            logger.error(message, ex);
+            throw new ServiceException(message);
+        }
+    }
+
+    @Transactional(readOnly = true, noRollbackFor = Exception.class)
+    public List<Hiscore> getHiscoresForUserDaysBack(long userId, int daysBack)  {
+        logger.info("Getting hiscores for user ({}) days back ({}).", userId, daysBack);
+
+        try  {
+            Instant cutoffTime = LocalDate.now().atStartOfDay(ZoneId.of("America/Chicago")).minusDays(daysBack).toInstant();
+            List<HiscoreData> hiscoreData = hiscoreDao.getHiscoresForUserUntilCutoffTime(userId, cutoffTime);
+
+            return hiscoreData.stream()
+                    .map(HiscoreData::toHiscore)
+                    .sorted(Comparator.comparing(Hiscore::getUpdateTime))
+                    .collect(Collectors.toList());
+        } catch (Exception ex) {
+            String message = "An unexpected error occurred while getting hiscores for user (%d) days back (%d).";
+            message = String.format(message, userId, daysBack);
             logger.error(message, ex);
             throw new ServiceException(message);
         }

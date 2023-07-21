@@ -16,6 +16,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -32,6 +34,9 @@ public class HiscoreDao {
     private static String SELECT_HISCORE_NEAREST_TIMESTAMP = "select * from %s.hiscores where his_userid = :userid and" +
             " his_update_time = (select his_update_time from %s.hiscores where his_userid = :userid order by" +
             " abs(extract(epoch from (his_update_time - :nearestTimestamp))) limit 1)";
+
+    private static String SELECT_HISCORE_BY_USERID_UNTIL_TIME = "select * from %s.hiscores where his_userid = :userid and" +
+            " his_update_time >= :cutoffTime";
 
     // not proud of this one
     private static String INSERT_HISCORE = "insert into %s.hiscores (his_userid, his_update_time, his_overall_xp," +
@@ -84,7 +89,7 @@ public class HiscoreDao {
     }
 
     public Optional<HiscoreData> getHiscoreNearest(long userId, Timestamp timestamp) {
-        logger.debug("Getting nearest hiscore ({}) - ({])", userId, timestamp);
+        logger.debug("Getting nearest hiscore ({}) - ({})", userId, timestamp);
 
         MapSqlParameterSource parameters = new MapSqlParameterSource()
                 .addValue("userid", userId, Types.NUMERIC)
@@ -97,6 +102,16 @@ public class HiscoreDao {
             logger.info(message);
             return Optional.empty();
         }
+    }
+
+    public List<HiscoreData> getHiscoresForUserUntilCutoffTime(long userId, Instant cutoffTime) {
+        logger.debug("Getting hiscores for user ({}) until cutoff time ({}).", userId, cutoffTime);
+
+        MapSqlParameterSource parameters = new MapSqlParameterSource()
+                .addValue("userid", userId, Types.NUMERIC)
+                .addValue("cutoffTime", Timestamp.from(cutoffTime), Types.TIMESTAMP);
+
+        return namedJdbcTemplate.query(SELECT_HISCORE_BY_USERID_UNTIL_TIME, parameters, hiscoreRowMapper);
     }
 
     public void insertHiscore(HiscoreData hiscoreData) throws DaoException {
@@ -276,6 +291,7 @@ public class HiscoreDao {
     private void populateSchema(String schema) {
         SELECT_LATEST_HISCORE_BY_USERID = String.format(SELECT_LATEST_HISCORE_BY_USERID, schema);
         SELECT_HISCORE_NEAREST_TIMESTAMP = String.format(SELECT_HISCORE_NEAREST_TIMESTAMP, schema, schema);
+        SELECT_HISCORE_BY_USERID_UNTIL_TIME = String.format(SELECT_HISCORE_BY_USERID_UNTIL_TIME, schema);
         INSERT_HISCORE = String.format(INSERT_HISCORE, schema);
     }
 

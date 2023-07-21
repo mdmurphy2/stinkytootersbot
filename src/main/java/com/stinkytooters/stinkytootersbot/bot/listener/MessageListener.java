@@ -1,9 +1,11 @@
 package com.stinkytooters.stinkytootersbot.bot.listener;
 
+import com.stinkytooters.stinkytootersbot.api.discord.AbstractDiscordResource;
 import com.stinkytooters.stinkytootersbot.api.discord.Command;
 import com.stinkytooters.stinkytootersbot.resource.user.UserResource;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +15,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.lang.invoke.MethodHandles;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -25,12 +28,13 @@ public class MessageListener extends ListenerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final Set<String> allowedChannelIds = new HashSet<>();
-    private final UserResource userResource;
+    private final List<AbstractDiscordResource> resources;
 
     @Inject
-    public MessageListener(UserResource userResource, @Value("${allowed.channel}") String allowedChannel) {
+    public MessageListener(List<AbstractDiscordResource> resources, @Value("${allowed.channel}") String allowedChannel) {
         super();
-        this.userResource = Objects.requireNonNull(userResource, "UserResource is required.");
+        logger.info("Registering ({}) discord resources.", resources);
+        this.resources = Objects.requireNonNull(resources, "Discord resources are required.");
         allowedChannelIds.add(allowedChannel);
     }
 
@@ -45,12 +49,13 @@ public class MessageListener extends ListenerAdapter {
         }
 
         final String message = event.getMessage().getContentDisplay();
-        userResource.getCommands().entrySet()
-                .stream()
+        resources.stream()
+                .map(AbstractDiscordResource::getCommands)
+                .map(Map::entrySet)
+                .flatMap(Set::stream)
                 .filter(e -> message.startsWith(e.getKey()))
-                .map(Map.Entry::getValue)
                 .findFirst()
-                .ifPresent(value -> executeCommand(value, event, message));
+                .ifPresent(e -> executeCommand(e.getValue(), event, message));
     }
 
     private void executeCommand(Command command, MessageReceivedEvent event, String message) {
@@ -59,7 +64,7 @@ public class MessageListener extends ListenerAdapter {
                 .orTimeout(1, TimeUnit.MINUTES);
     }
 
-    private void sendMessage(MessageReceivedEvent event, String message) {
+    private void sendMessage(MessageReceivedEvent event, MessageCreateData message) {
         event.getChannel().asTextChannel().sendMessage(message).queue();
     }
 }
