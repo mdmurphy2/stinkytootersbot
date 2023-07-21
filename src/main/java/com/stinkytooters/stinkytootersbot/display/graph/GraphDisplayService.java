@@ -202,14 +202,7 @@ public class GraphDisplayService {
                     logger.error("An exception occurred while writing the file to disk.", ex);
                 }
         });
-        Thread.sleep(250);
-
-        int attempts = 0;
-        while (baos.size() == 0 && attempts < 10) {
-            Thread.sleep(250);
-            attempts += 1;
-        }
-
+        Thread.sleep(2000);
         return baos.toByteArray();
     }
 
