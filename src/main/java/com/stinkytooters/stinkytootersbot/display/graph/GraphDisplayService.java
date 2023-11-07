@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +61,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Named
 public class GraphDisplayService {
@@ -68,8 +70,10 @@ public class GraphDisplayService {
 
     private static final ZoneId CENTRAL_ZONE_ID = ZoneId.of("America/Chicago");
 
-    private static final String USAGE = "!graph [-d <daysBack>] [-m <minimumXpGained>]";
+    private static final String USAGE = "!graph [-d <daysBack>] [-m <minimumXpGained>] [-st (should only show stinky tooters)]";
     private static final String UNEXPECTED_ERROR = "An unexpected error occurred while generating a graph, please try again.";
+    private static final Set<String> ST_USERS = Stream.of("st jamie", "st juicy", "st snag", "st zecuity", "me rf")
+            .collect(Collectors.toSet());
 
     private final HiscoreService hiscoreService;
     private final UserService userService;
@@ -94,7 +98,12 @@ public class GraphDisplayService {
                 minimumXpGain = getMinimumXpGain(commandParts);
             }
 
-            byte[] graph = generateGraph(daysBack, minimumXpGain);
+            boolean stOnly = false;
+            if (commandParts.contains("-st")) {
+                stOnly = true;
+            }
+
+            byte[] graph = generateGraph(daysBack, minimumXpGain, stOnly);
             if (graph != null && graph.length > 0) {
                 return generateGraphMessage(graph);
             } else {
@@ -159,11 +168,15 @@ public class GraphDisplayService {
             throw new InvalidCommandFormatException("The value following the minimum xp gain (-m) specifier must be numeric.");
         }
     }
-    private byte[] generateGraph(int daysBack, int mininmumXpGain) {
+    private byte[] generateGraph(int daysBack, int mininmumXpGain, boolean stOnly) {
         List<User> users = userService.getAllUsers()
                 .stream()
                 .filter(user -> user.getStatus() == UserStatus.ACTIVE)
                 .collect(Collectors.toList());
+
+        if (stOnly) {
+            users = filterStOnly(users);
+        }
 
         List<HiscoreGraphDisplayBean> graphViewBeans = new ArrayList<>();
         for (User user : users) {
@@ -323,6 +336,18 @@ public class GraphDisplayService {
         viewBean.setLabels(labels);
         viewBean.setData(data);
         return viewBean;
+    }
+
+    private List<User> filterStOnly(List<User> users) {
+        List<User> stOnly = new ArrayList<>();
+        for (User user : users) {
+            for (String stUser : ST_USERS) {
+                if (stUser.equalsIgnoreCase(user.getName())) {
+                    stOnly.add(user);
+                }
+            }
+        }
+        return stOnly;
     }
 
 }
