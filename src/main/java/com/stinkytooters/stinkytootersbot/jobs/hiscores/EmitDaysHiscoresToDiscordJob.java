@@ -22,6 +22,7 @@ import javax.inject.Named;
 import java.lang.invoke.MethodHandles;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -62,7 +63,16 @@ public class EmitDaysHiscoresToDiscordJob implements Job {
         Instant oneDayAgo = Instant.now().minus(24, ChronoUnit.HOURS);
         List<User> users = userService.getAllUsers();
 
+        List<User> usersCopy = new ArrayList<>();
         for (User user : users) {
+            if (user.getName().equalsIgnoreCase("just yanks")) {
+                usersCopy.add(0, user);
+            } else {
+                usersCopy.add(user);
+            }
+        }
+
+        for (User user : usersCopy) {
             if (user.getStatus() == UserStatus.ACTIVE) {
                 try {
                     Map<UserUpdateService.HiscoreReference, Hiscore> oldNew = userUpdateService.updateHiscoresFor(user, oneDayAgo);
