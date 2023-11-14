@@ -16,6 +16,7 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.embed.swing.JFXPanel;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.chart.CategoryAxis;
@@ -278,8 +279,18 @@ public class GraphDisplayService {
                 int xp = viewBean.getData().get(i);
                 series.getData().add(new XYChart.Data<>(label, xp));
             }
+
             lineChart.getData().add(series);
         }
+
+        for (XYChart.Series<String, Integer> series : lineChart.getData()) {
+            for (XYChart.Data<String, Integer> data : series.getData())  {
+                Node node = data.getNode();
+                node.setScaleX(0.25);
+                node.setScaleY(0.25);
+            }
+        }
+
         return lineChart;
     }
 
