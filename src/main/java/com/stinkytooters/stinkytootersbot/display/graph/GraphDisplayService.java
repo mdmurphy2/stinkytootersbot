@@ -103,7 +103,12 @@ public class GraphDisplayService {
                 stOnly = true;
             }
 
-            byte[] graph = generateGraph(daysBack, minimumXpGain, stOnly);
+            Skill skill = Skill.OVERALL;
+            if (commandParts.contains("-skill")) {
+                skill = getSkill(commandParts);
+            }
+
+            byte[] graph = generateGraph(daysBack, minimumXpGain, stOnly, skill);
             if (graph != null && graph.length > 0) {
                 return generateGraphMessage(graph);
             } else {
@@ -168,7 +173,22 @@ public class GraphDisplayService {
             throw new InvalidCommandFormatException("The value following the minimum xp gain (-m) specifier must be numeric.");
         }
     }
-    private byte[] generateGraph(int daysBack, int mininmumXpGain, boolean stOnly) {
+
+    private Skill getSkill(List<String> commandParts) {
+        int skillSpecifier = commandParts.indexOf("-skill");
+        if (skillSpecifier + 1 >= commandParts.size())  {
+            throw new InvalidCommandFormatException("A skill specifier must have a corresponding skill.");
+        }
+
+        String skillCandidate = commandParts.get(skillSpecifier + 1).trim();
+        try {
+            return Skill.valueOf(skillCandidate.toUpperCase());
+        } catch (Exception ex) {
+            throw new InvalidCommandFormatException("The value following the skill specifier (-skill) must be a skill.");
+        }
+    }
+
+    private byte[] generateGraph(int daysBack, int mininmumXpGain, boolean stOnly, Skill skill) {
         List<User> users = userService.getAllUsers()
                 .stream()
                 .filter(user -> user.getStatus() == UserStatus.ACTIVE)
@@ -180,7 +200,7 @@ public class GraphDisplayService {
 
         List<HiscoreGraphDisplayBean> graphViewBeans = new ArrayList<>();
         for (User user : users) {
-            HiscoreGraphDisplayBean graphViewBean = getHiscoreGraphViewBeanForUser(user.getId(), user.getName(), Skill.OVERALL, daysBack, Timescale.DAYS);
+            HiscoreGraphDisplayBean graphViewBean = getHiscoreGraphViewBeanForUser(user.getId(), user.getName(), skill, daysBack, Timescale.DAYS);
             if (graphViewBean.getDelta() > mininmumXpGain) {
                 graphViewBeans.add(graphViewBean);
             }
