@@ -106,6 +106,184 @@ public class HiscoreData {
     private int constructionXp;
     private int constructionRank;
     private int constructionLevel;
+    
+    private int gotrRank;
+    private int gotrKc;
+
+    private int sireRank;
+    private int sireKc;
+
+    private int hydraRank;
+    private int hyrdraKc;
+
+    private int artioRank;
+    private int artioKc;
+
+    private int barrowsRank;
+    private int barrowsKc;
+
+    private int bryophytaRank;
+    private int bryophytaKc;
+    
+    private int callistoRank;
+    private int callistoKc;
+
+    private int calvarionRank;
+    private int calvarionKc;
+
+    private int cerberusRank;
+    private int cerberusKc;
+
+    private int coxRank;
+    private int coxKc;
+
+    private int coxcmRank;
+    private int coxcmKc;
+
+    private int ceRank;
+    private int ceKc;
+
+    private int cfRank;
+    private int cfKc;
+
+    private int zilyanaRank;
+    private int zilyanaKc;
+
+    private int corpRank;
+    private int corpKc;
+
+    private int caRank;
+    private int caKc;
+
+    private int primeRank;
+    private int primeKc;
+
+    private int rexRank;
+    private int rexKc;
+
+    private int supremeRank;
+    private int supremeKc;
+
+    private int derangedRank;
+    private int derangedKc;
+
+    private int dukeRank;
+    private int dukeKc;
+
+    private int graadrorRank;
+    private int graardorKc;
+    private int moleRank;
+
+    private int moleKc;
+    private int ggRank;
+
+    private int ggKc;
+    private int hesporiRank;
+    private int hesporiKc;
+    
+    private int kqRank;
+    private int kqKc;
+
+    private int kbdRank;
+    private int kbdKc;
+
+    private int krakenRank;
+    private int krakenKc;
+
+    private int kreearraRank;
+    private int kreearraKc;
+
+    private int krilRank;
+    private int krilKc;
+
+    private int mimicRank;
+    private int mimicKc;
+
+    private int nexRank;
+    private int nexKc;
+
+    private int nightmareRank;
+    private int nightmareKc;
+
+    private int phosanisRank;
+    private int phosanisKc;
+
+    private int oborRank;
+    private int oborKc;
+
+    private int muspahRank;
+    private int muspahKc;
+
+    private int sarachnisRank;
+    private int sarachnisKc;
+
+    private int scorpiaRank;
+    private int scorpiaKc;
+
+    private int skotizoRank;
+    private int skotizoKc;
+
+    private int spindelRank;
+    private int spindelKc;
+
+    private int temporossRank;
+    private int temporossKc;
+
+    private int gauntletRank;
+    private int gauntletKc;
+
+    private int cgRank;
+    private int cgKc;
+
+    private int leviathanRank;
+    private int leviathanKc;
+
+    private int whispererRank;
+    private int whispererKc;
+
+    private int tobRank;
+    private int tobKc;
+
+    private int tobhmRank;
+    private int tobhmKc;
+
+    private int thermyRank;
+    private int thermyKc;
+
+    private int toaRank;
+    private int toaKc;
+
+    private int toaexpertRank;
+    private int toaexpertKc;
+
+    private int zukRank;
+    private int zukKc;
+
+    private int jadRank;
+    private int jadKc;
+
+    private int vardorvisRank;
+    private int vardorvisKc;
+
+    private int venenatisRank;
+    private int venenatisKc;
+
+    private int vetionRank;
+    private int vetionKc;
+
+    private int vorkathRank;
+    private int vorkathKc;
+
+    private int wintertodtRank;
+    private int wintertodtKc;
+
+    private int zalcanoRank;
+    private int zalcanoKc;
+
+    private int zulrahRank;
+    private int zulrahKc;
+    
+    
 
     public Hiscore toHiscore() {
         Hiscore hiscore = new Hiscore();
@@ -880,6 +1058,950 @@ public class HiscoreData {
 
     public void setConstructionLevel(int constructionLevel) {
         this.constructionLevel = constructionLevel;
+    }
+
+    public int getGotrRank() {
+        return gotrRank;
+    }
+
+    public void setGotrRank(int gotrRank) {
+        this.gotrRank = gotrRank;
+    }
+
+    public int getGotrKc() {
+        return gotrKc;
+    }
+
+    public void setGotrKc(int gotrKc) {
+        this.gotrKc = gotrKc;
+    }
+
+    public int getSireRank() {
+        return sireRank;
+    }
+
+    public void setSireRank(int sireRank) {
+        this.sireRank = sireRank;
+    }
+
+    public int getSireKc() {
+        return sireKc;
+    }
+
+    public void setSireKc(int sireKc) {
+        this.sireKc = sireKc;
+    }
+
+    public int getHydraRank() {
+        return hydraRank;
+    }
+
+    public void setHydraRank(int hydraRank) {
+        this.hydraRank = hydraRank;
+    }
+
+    public int getHyrdraKc() {
+        return hyrdraKc;
+    }
+
+    public void setHyrdraKc(int hyrdraKc) {
+        this.hyrdraKc = hyrdraKc;
+    }
+
+    public int getArtioRank() {
+        return artioRank;
+    }
+
+    public void setArtioRank(int artioRank) {
+        this.artioRank = artioRank;
+    }
+
+    public int getArtioKc() {
+        return artioKc;
+    }
+
+    public void setArtioKc(int artioKc) {
+        this.artioKc = artioKc;
+    }
+
+    public int getBarrowsRank() {
+        return barrowsRank;
+    }
+
+    public void setBarrowsRank(int barrowsRank) {
+        this.barrowsRank = barrowsRank;
+    }
+
+    public int getBarrowsKc() {
+        return barrowsKc;
+    }
+
+    public void setBarrowsKc(int barrowsKc) {
+        this.barrowsKc = barrowsKc;
+    }
+
+    public int getBryophytaRank() {
+        return bryophytaRank;
+    }
+
+    public void setBryophytaRank(int bryophytaRank) {
+        this.bryophytaRank = bryophytaRank;
+    }
+
+    public int getBryophytaKc() {
+        return bryophytaKc;
+    }
+
+    public void setBryophytaKc(int bryophytaKc) {
+        this.bryophytaKc = bryophytaKc;
+    }
+
+    public int getCallistoRank() {
+        return callistoRank;
+    }
+
+    public void setCallistoRank(int callistoRank) {
+        this.callistoRank = callistoRank;
+    }
+
+    public int getCallistoKc() {
+        return callistoKc;
+    }
+
+    public void setCallistoKc(int callistoKc) {
+        this.callistoKc = callistoKc;
+    }
+
+    public int getCalvarionRank() {
+        return calvarionRank;
+    }
+
+    public void setCalvarionRank(int calvarionRank) {
+        this.calvarionRank = calvarionRank;
+    }
+
+    public int getCalvarionKc() {
+        return calvarionKc;
+    }
+
+    public void setCalvarionKc(int calvarionKc) {
+        this.calvarionKc = calvarionKc;
+    }
+
+    public int getCerberusRank() {
+        return cerberusRank;
+    }
+
+    public void setCerberusRank(int cerberusRank) {
+        this.cerberusRank = cerberusRank;
+    }
+
+    public int getCerberusKc() {
+        return cerberusKc;
+    }
+
+    public void setCerberusKc(int cerberusKc) {
+        this.cerberusKc = cerberusKc;
+    }
+
+    public int getCoxRank() {
+        return coxRank;
+    }
+
+    public void setCoxRank(int coxRank) {
+        this.coxRank = coxRank;
+    }
+
+    public int getCoxKc() {
+        return coxKc;
+    }
+
+    public void setCoxKc(int coxKc) {
+        this.coxKc = coxKc;
+    }
+
+    public int getCoxcmRank() {
+        return coxcmRank;
+    }
+
+    public void setCoxcmRank(int coxcmRank) {
+        this.coxcmRank = coxcmRank;
+    }
+
+    public int getCoxcmKc() {
+        return coxcmKc;
+    }
+
+    public void setCoxcmKc(int coxcmKc) {
+        this.coxcmKc = coxcmKc;
+    }
+
+    public int getCeRank() {
+        return ceRank;
+    }
+
+    public void setCeRank(int ceRank) {
+        this.ceRank = ceRank;
+    }
+
+    public int getCeKc() {
+        return ceKc;
+    }
+
+    public void setCeKc(int ceKc) {
+        this.ceKc = ceKc;
+    }
+
+    public int getCfRank() {
+        return cfRank;
+    }
+
+    public void setCfRank(int cfRank) {
+        this.cfRank = cfRank;
+    }
+
+    public int getCfKc() {
+        return cfKc;
+    }
+
+    public void setCfKc(int cfKc) {
+        this.cfKc = cfKc;
+    }
+
+    public int getZilyanaRank() {
+        return zilyanaRank;
+    }
+
+    public void setZilyanaRank(int zilyanaRank) {
+        this.zilyanaRank = zilyanaRank;
+    }
+
+    public int getZilyanaKc() {
+        return zilyanaKc;
+    }
+
+    public void setZilyanaKc(int zilyanaKc) {
+        this.zilyanaKc = zilyanaKc;
+    }
+
+    public int getCorpRank() {
+        return corpRank;
+    }
+
+    public void setCorpRank(int corpRank) {
+        this.corpRank = corpRank;
+    }
+
+    public int getCorpKc() {
+        return corpKc;
+    }
+
+    public void setCorpKc(int corpKc) {
+        this.corpKc = corpKc;
+    }
+
+    public int getCaRank() {
+        return caRank;
+    }
+
+    public void setCaRank(int caRank) {
+        this.caRank = caRank;
+    }
+
+    public int getCaKc() {
+        return caKc;
+    }
+
+    public void setCaKc(int caKc) {
+        this.caKc = caKc;
+    }
+
+    public int getPrimeRank() {
+        return primeRank;
+    }
+
+    public void setPrimeRank(int primeRank) {
+        this.primeRank = primeRank;
+    }
+
+    public int getPrimeKc() {
+        return primeKc;
+    }
+
+    public void setPrimeKc(int primeKc) {
+        this.primeKc = primeKc;
+    }
+
+    public int getRexRank() {
+        return rexRank;
+    }
+
+    public void setRexRank(int rexRank) {
+        this.rexRank = rexRank;
+    }
+
+    public int getRexKc() {
+        return rexKc;
+    }
+
+    public void setRexKc(int rexKc) {
+        this.rexKc = rexKc;
+    }
+
+    public int getSupremeRank() {
+        return supremeRank;
+    }
+
+    public void setSupremeRank(int supremeRank) {
+        this.supremeRank = supremeRank;
+    }
+
+    public int getSupremeKc() {
+        return supremeKc;
+    }
+
+    public void setSupremeKc(int supremeKc) {
+        this.supremeKc = supremeKc;
+    }
+
+    public int getDerangedRank() {
+        return derangedRank;
+    }
+
+    public void setDerangedRank(int derangedRank) {
+        this.derangedRank = derangedRank;
+    }
+
+    public int getDerangedKc() {
+        return derangedKc;
+    }
+
+    public void setDerangedKc(int derangedKc) {
+        this.derangedKc = derangedKc;
+    }
+
+    public int getDukeRank() {
+        return dukeRank;
+    }
+
+    public void setDukeRank(int dukeRank) {
+        this.dukeRank = dukeRank;
+    }
+
+    public int getDukeKc() {
+        return dukeKc;
+    }
+
+    public void setDukeKc(int dukeKc) {
+        this.dukeKc = dukeKc;
+    }
+
+    public int getGraadrorRank() {
+        return graadrorRank;
+    }
+
+    public void setGraadrorRank(int graadrorRank) {
+        this.graadrorRank = graadrorRank;
+    }
+
+    public int getGraardorKc() {
+        return graardorKc;
+    }
+
+    public void setGraardorKc(int graardorKc) {
+        this.graardorKc = graardorKc;
+    }
+
+    public int getMoleRank() {
+        return moleRank;
+    }
+
+    public void setMoleRank(int moleRank) {
+        this.moleRank = moleRank;
+    }
+
+    public int getMoleKc() {
+        return moleKc;
+    }
+
+    public void setMoleKc(int moleKc) {
+        this.moleKc = moleKc;
+    }
+
+    public int getGgRank() {
+        return ggRank;
+    }
+
+    public void setGgRank(int ggRank) {
+        this.ggRank = ggRank;
+    }
+
+    public int getGgKc() {
+        return ggKc;
+    }
+
+    public void setGgKc(int ggKc) {
+        this.ggKc = ggKc;
+    }
+
+    public int getHesporiRank() {
+        return hesporiRank;
+    }
+
+    public void setHesporiRank(int hesporiRank) {
+        this.hesporiRank = hesporiRank;
+    }
+
+    public int getHesporiKc() {
+        return hesporiKc;
+    }
+
+    public void setHesporiKc(int hesporiKc) {
+        this.hesporiKc = hesporiKc;
+    }
+
+    public int getKqRank() {
+        return kqRank;
+    }
+
+    public void setKqRank(int kqRank) {
+        this.kqRank = kqRank;
+    }
+
+    public int getKqKc() {
+        return kqKc;
+    }
+
+    public void setKqKc(int kqKc) {
+        this.kqKc = kqKc;
+    }
+
+    public int getKbdRank() {
+        return kbdRank;
+    }
+
+    public void setKbdRank(int kbdRank) {
+        this.kbdRank = kbdRank;
+    }
+
+    public int getKbdKc() {
+        return kbdKc;
+    }
+
+    public void setKbdKc(int kbdKc) {
+        this.kbdKc = kbdKc;
+    }
+
+    public int getKrakenRank() {
+        return krakenRank;
+    }
+
+    public void setKrakenRank(int krakenRank) {
+        this.krakenRank = krakenRank;
+    }
+
+    public int getKrakenKc() {
+        return krakenKc;
+    }
+
+    public void setKrakenKc(int krakenKc) {
+        this.krakenKc = krakenKc;
+    }
+
+    public int getKreearraRank() {
+        return kreearraRank;
+    }
+
+    public void setKreearraRank(int kreearraRank) {
+        this.kreearraRank = kreearraRank;
+    }
+
+    public int getKreearraKc() {
+        return kreearraKc;
+    }
+
+    public void setKreearraKc(int kreearraKc) {
+        this.kreearraKc = kreearraKc;
+    }
+
+    public int getKrilRank() {
+        return krilRank;
+    }
+
+    public void setKrilRank(int krilRank) {
+        this.krilRank = krilRank;
+    }
+
+    public int getKrilKc() {
+        return krilKc;
+    }
+
+    public void setKrilKc(int krilKc) {
+        this.krilKc = krilKc;
+    }
+
+    public int getMimicRank() {
+        return mimicRank;
+    }
+
+    public void setMimicRank(int mimicRank) {
+        this.mimicRank = mimicRank;
+    }
+
+    public int getMimicKc() {
+        return mimicKc;
+    }
+
+    public void setMimicKc(int mimicKc) {
+        this.mimicKc = mimicKc;
+    }
+
+    public int getNexRank() {
+        return nexRank;
+    }
+
+    public void setNexRank(int nexRank) {
+        this.nexRank = nexRank;
+    }
+
+    public int getNexKc() {
+        return nexKc;
+    }
+
+    public void setNexKc(int nexKc) {
+        this.nexKc = nexKc;
+    }
+
+    public int getNightmareRank() {
+        return nightmareRank;
+    }
+
+    public void setNightmareRank(int nightmareRank) {
+        this.nightmareRank = nightmareRank;
+    }
+
+    public int getNightmareKc() {
+        return nightmareKc;
+    }
+
+    public void setNightmareKc(int nightmareKc) {
+        this.nightmareKc = nightmareKc;
+    }
+
+    public int getPhosanisRank() {
+        return phosanisRank;
+    }
+
+    public void setPhosanisRank(int phosanisRank) {
+        this.phosanisRank = phosanisRank;
+    }
+
+    public int getPhosanisKc() {
+        return phosanisKc;
+    }
+
+    public void setPhosanisKc(int phosanisKc) {
+        this.phosanisKc = phosanisKc;
+    }
+
+    public int getOborRank() {
+        return oborRank;
+    }
+
+    public void setOborRank(int oborRank) {
+        this.oborRank = oborRank;
+    }
+
+    public int getOborKc() {
+        return oborKc;
+    }
+
+    public void setOborKc(int oborKc) {
+        this.oborKc = oborKc;
+    }
+
+    public int getMuspahRank() {
+        return muspahRank;
+    }
+
+    public void setMuspahRank(int muspahRank) {
+        this.muspahRank = muspahRank;
+    }
+
+    public int getMuspahKc() {
+        return muspahKc;
+    }
+
+    public void setMuspahKc(int muspahKc) {
+        this.muspahKc = muspahKc;
+    }
+
+    public int getSarachnisRank() {
+        return sarachnisRank;
+    }
+
+    public void setSarachnisRank(int sarachnisRank) {
+        this.sarachnisRank = sarachnisRank;
+    }
+
+    public int getSarachnisKc() {
+        return sarachnisKc;
+    }
+
+    public void setSarachnisKc(int sarachnisKc) {
+        this.sarachnisKc = sarachnisKc;
+    }
+
+    public int getScorpiaRank() {
+        return scorpiaRank;
+    }
+
+    public void setScorpiaRank(int scorpiaRank) {
+        this.scorpiaRank = scorpiaRank;
+    }
+
+    public int getScorpiaKc() {
+        return scorpiaKc;
+    }
+
+    public void setScorpiaKc(int scorpiaKc) {
+        this.scorpiaKc = scorpiaKc;
+    }
+
+    public int getSkotizoRank() {
+        return skotizoRank;
+    }
+
+    public void setSkotizoRank(int skotizoRank) {
+        this.skotizoRank = skotizoRank;
+    }
+
+    public int getSkotizoKc() {
+        return skotizoKc;
+    }
+
+    public void setSkotizoKc(int skotizoKc) {
+        this.skotizoKc = skotizoKc;
+    }
+
+    public int getSpindelRank() {
+        return spindelRank;
+    }
+
+    public void setSpindelRank(int spindelRank) {
+        this.spindelRank = spindelRank;
+    }
+
+    public int getSpindelKc() {
+        return spindelKc;
+    }
+
+    public void setSpindelKc(int spindelKc) {
+        this.spindelKc = spindelKc;
+    }
+
+    public int getTemporossRank() {
+        return temporossRank;
+    }
+
+    public void setTemporossRank(int temporossRank) {
+        this.temporossRank = temporossRank;
+    }
+
+    public int getTemporossKc() {
+        return temporossKc;
+    }
+
+    public void setTemporossKc(int temporossKc) {
+        this.temporossKc = temporossKc;
+    }
+
+    public int getGauntletRank() {
+        return gauntletRank;
+    }
+
+    public void setGauntletRank(int gauntletRank) {
+        this.gauntletRank = gauntletRank;
+    }
+
+    public int getGauntletKc() {
+        return gauntletKc;
+    }
+
+    public void setGauntletKc(int gauntletKc) {
+        this.gauntletKc = gauntletKc;
+    }
+
+    public int getCgRank() {
+        return cgRank;
+    }
+
+    public void setCgRank(int cgRank) {
+        this.cgRank = cgRank;
+    }
+
+    public int getCgKc() {
+        return cgKc;
+    }
+
+    public void setCgKc(int cgKc) {
+        this.cgKc = cgKc;
+    }
+
+    public int getLeviathanRank() {
+        return leviathanRank;
+    }
+
+    public void setLeviathanRank(int leviathanRank) {
+        this.leviathanRank = leviathanRank;
+    }
+
+    public int getLeviathanKc() {
+        return leviathanKc;
+    }
+
+    public void setLeviathanKc(int leviathanKc) {
+        this.leviathanKc = leviathanKc;
+    }
+
+    public int getWhispererRank() {
+        return whispererRank;
+    }
+
+    public void setWhispererRank(int whispererRank) {
+        this.whispererRank = whispererRank;
+    }
+
+    public int getWhispererKc() {
+        return whispererKc;
+    }
+
+    public void setWhispererKc(int whispererKc) {
+        this.whispererKc = whispererKc;
+    }
+
+    public int getTobRank() {
+        return tobRank;
+    }
+
+    public void setTobRank(int tobRank) {
+        this.tobRank = tobRank;
+    }
+
+    public int getTobKc() {
+        return tobKc;
+    }
+
+    public void setTobKc(int tobKc) {
+        this.tobKc = tobKc;
+    }
+
+    public int getTobhmRank() {
+        return tobhmRank;
+    }
+
+    public void setTobhmRank(int tobhmRank) {
+        this.tobhmRank = tobhmRank;
+    }
+
+    public int getTobhmKc() {
+        return tobhmKc;
+    }
+
+    public void setTobhmKc(int tobhmKc) {
+        this.tobhmKc = tobhmKc;
+    }
+
+    public int getThermyRank() {
+        return thermyRank;
+    }
+
+    public void setThermyRank(int thermyRank) {
+        this.thermyRank = thermyRank;
+    }
+
+    public int getThermyKc() {
+        return thermyKc;
+    }
+
+    public void setThermyKc(int thermyKc) {
+        this.thermyKc = thermyKc;
+    }
+
+    public int getToaRank() {
+        return toaRank;
+    }
+
+    public void setToaRank(int toaRank) {
+        this.toaRank = toaRank;
+    }
+
+    public int getToaKc() {
+        return toaKc;
+    }
+
+    public void setToaKc(int toaKc) {
+        this.toaKc = toaKc;
+    }
+
+    public int getToaexpertRank() {
+        return toaexpertRank;
+    }
+
+    public void setToaexpertRank(int toaexpertRank) {
+        this.toaexpertRank = toaexpertRank;
+    }
+
+    public int getToaexpertKc() {
+        return toaexpertKc;
+    }
+
+    public void setToaexpertKc(int toaexpertKc) {
+        this.toaexpertKc = toaexpertKc;
+    }
+
+    public int getZukRank() {
+        return zukRank;
+    }
+
+    public void setZukRank(int zukRank) {
+        this.zukRank = zukRank;
+    }
+
+    public int getZukKc() {
+        return zukKc;
+    }
+
+    public void setZukKc(int zukKc) {
+        this.zukKc = zukKc;
+    }
+
+    public int getJadRank() {
+        return jadRank;
+    }
+
+    public void setJadRank(int jadRank) {
+        this.jadRank = jadRank;
+    }
+
+    public int getJadKc() {
+        return jadKc;
+    }
+
+    public void setJadKc(int jadKc) {
+        this.jadKc = jadKc;
+    }
+
+    public int getVardorvisRank() {
+        return vardorvisRank;
+    }
+
+    public void setVardorvisRank(int vardorvisRank) {
+        this.vardorvisRank = vardorvisRank;
+    }
+
+    public int getVardorvisKc() {
+        return vardorvisKc;
+    }
+
+    public void setVardorvisKc(int vardorvisKc) {
+        this.vardorvisKc = vardorvisKc;
+    }
+
+    public int getVenenatisRank() {
+        return venenatisRank;
+    }
+
+    public void setVenenatisRank(int venenatisRank) {
+        this.venenatisRank = venenatisRank;
+    }
+
+    public int getVenenatisKc() {
+        return venenatisKc;
+    }
+
+    public void setVenenatisKc(int venenatisKc) {
+        this.venenatisKc = venenatisKc;
+    }
+
+    public int getVetionRank() {
+        return vetionRank;
+    }
+
+    public void setVetionRank(int vetionRank) {
+        this.vetionRank = vetionRank;
+    }
+
+    public int getVetionKc() {
+        return vetionKc;
+    }
+
+    public void setVetionKc(int vetionKc) {
+        this.vetionKc = vetionKc;
+    }
+
+    public int getVorkathRank() {
+        return vorkathRank;
+    }
+
+    public void setVorkathRank(int vorkathRank) {
+        this.vorkathRank = vorkathRank;
+    }
+
+    public int getVorkathKc() {
+        return vorkathKc;
+    }
+
+    public void setVorkathKc(int vorkathKc) {
+        this.vorkathKc = vorkathKc;
+    }
+
+    public int getWintertodtRank() {
+        return wintertodtRank;
+    }
+
+    public void setWintertodtRank(int wintertodtRank) {
+        this.wintertodtRank = wintertodtRank;
+    }
+
+    public int getWintertodtKc() {
+        return wintertodtKc;
+    }
+
+    public void setWintertodtKc(int wintertodtKc) {
+        this.wintertodtKc = wintertodtKc;
+    }
+
+    public int getZalcanoRank() {
+        return zalcanoRank;
+    }
+
+    public void setZalcanoRank(int zalcanoRank) {
+        this.zalcanoRank = zalcanoRank;
+    }
+
+    public int getZalcanoKc() {
+        return zalcanoKc;
+    }
+
+    public void setZalcanoKc(int zalcanoKc) {
+        this.zalcanoKc = zalcanoKc;
+    }
+
+    public int getZulrahRank() {
+        return zulrahRank;
+    }
+
+    public void setZulrahRank(int zulrahRank) {
+        this.zulrahRank = zulrahRank;
+    }
+
+    public int getZulrahKc() {
+        return zulrahKc;
+    }
+
+    public void setZulrahKc(int zulrahKc) {
+        this.zulrahKc = zulrahKc;
     }
 
     @Override
