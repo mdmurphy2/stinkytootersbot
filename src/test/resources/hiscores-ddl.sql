@@ -104,5 +104,184 @@ create table stinky_tooters.hiscores (
 
     his_construction_xp    numeric(10) not null,
     his_construction_rank  numeric(10) not null,
-    his_construction_level numeric(5)  not null
+    his_construction_level numeric(5)  not null,
+
+    his_gotr_rank  numeric(10) not null,
+    his_gotr_kc numeric(5)  not null,
+
+    his_sire_rank  numeric(10) not null,
+    his_sire_kc numeric(5)  not null,
+
+    his_hydra_rank  numeric(10) not null,
+    his_hyrdra_kc numeric(5)  not null,
+
+    his_artio_rank  numeric(10) not null,
+    his_artio_kc numeric(5)  not null,
+
+    his_barrows_rank  numeric(10) not null,
+    his_barrows_kc numeric(5)  not null,
+
+    his_bryophyta_rank  numeric(10) not null,
+    his_bryophyta_kc numeric(5)  not null,
+
+    his_callisto_rank  numeric(10) not null,
+    his_callisto_kc numeric(5)  not null,
+
+    his_calvarion_rank  numeric(10) not null,
+    his_calvarion_kc numeric(5)  not null,
+
+    his_cerberus_rank  numeric(10) not null,
+    his_cerberus_kc numeric(5)  not null,
+
+    his_cox_rank  numeric(10) not null,
+    his_cox_kc numeric(5)  not null,
+
+    his_coxcm_rank  numeric(10) not null,
+    his_coxcm_kc numeric(5)  not null,
+
+    his_ce_rank  numeric(10) not null,
+    his_ce_kc numeric(5)  not null,
+
+    his_cf_rank  numeric(10) not null,
+    his_cf_kc numeric(5)  not null,
+
+    his_zilyana_rank  numeric(10) not null,
+    his_zilyana_kc numeric(5)  not null,
+
+    his_corp_rank  numeric(10) not null,
+    his_corp_kc numeric(5)  not null,
+
+    his_ca_rank  numeric(10) not null,
+    his_ca_kc numeric(5)  not null,
+
+    his_prime_rank  numeric(10) not null,
+    his_prime_kc numeric(5)  not null,
+
+    his_rex_rank  numeric(10) not null,
+    his_rex_kc numeric(5)  not null,
+
+    his_supreme_rank  numeric(10) not null,
+    his_supreme_kc numeric(5)  not null,
+
+    his_deranged_rank  numeric(10) not null,
+    his_deranged_kc numeric(5)  not null,
+
+    his_duke_rank  numeric(10) not null,
+    his_duke_kc numeric(5)  not null,
+
+    his_graadror_rank  numeric(10) not null,
+    his_graardor_kc numeric(5)  not null,
+
+    his_mole_rank  numeric(10) not null,
+    his_mole_kc numeric(5)  not null,
+
+    his_gg_rank  numeric(10) not null,
+    his_gg_kc numeric(5)  not null,
+
+    his_hespori_rank  numeric(10) not null,
+    his_hespori_kc numeric(5)  not null,
+
+    his_kq_rank  numeric(10) not null,
+    his_kq_kc numeric(5)  not null,
+
+    his_kbd_rank  numeric(10) not null,
+    his_kbd_kc numeric(5)  not null,
+
+    his_kraken_rank  numeric(10) not null,
+    his_kraken_kc numeric(5)  not null,
+
+    his_kreearra_rank  numeric(10) not null,
+    his_kreearra_kc numeric(5)  not null,
+
+    his_kril_rank  numeric(10) not null,
+    his_kril_kc numeric(5)  not null,
+
+    his_mimic_rank  numeric(10) not null,
+    his_mimic_kc numeric(5)  not null,
+
+    his_nex_rank  numeric(10) not null,
+    his_nex_kc numeric(5)  not null,
+
+
+    his_nightmare_rank  numeric(10) not null,
+    his_nightmare_kc numeric(5)  not null,
+
+    his_phosanis_rank  numeric(10) not null,
+    his_phosanis_kc numeric(5)  not null,
+
+    his_obor_rank  numeric(10) not null,
+    his_obor_kc numeric(5)  not null,
+
+    his_muspah_rank  numeric(10) not null,
+    his_muspah_kc numeric(5)  not null,
+
+    his_sarachnis_rank  numeric(10) not null,
+    his_sarachnis_kc numeric(5)  not null,
+
+    his_scorpia_rank  numeric(10) not null,
+    his_scorpia_kc numeric(5)  not null,
+
+    his_skotizo_rank  numeric(10) not null,
+    his_skotizo_kc numeric(5)  not null,
+
+    his_spindel_rank  numeric(10) not null,
+    his_spindel_kc numeric(5)  not null,
+
+    his_tempoross_rank  numeric(10) not null,
+    his_tempoross_kc numeric(5)  not null,
+
+    his_gauntlet_rank  numeric(10) not null,
+    his_gauntlet_kc numeric(5)  not null,
+
+    his_cg_rank  numeric(10) not null,
+    his_cg_kc numeric(5)  not null,
+
+    his_leviathan_rank  numeric(10) not null,
+    his_leviathan_kc numeric(5)  not null,
+
+    his_whisperer_rank  numeric(10) not null,
+    his_whisperer_kc numeric(5)  not null,
+
+    his_tob_rank  numeric(10) not null,
+    his_tob_kc numeric(5)  not null,
+
+    his_tobhm_rank  numeric(10) not null,
+    his_tobhm_kc numeric(5)  not null,
+
+    his_thermy_rank  numeric(10) not null,
+    his_thermy_kc numeric(5)  not null,
+
+    his_toa_rank  numeric(10) not null,
+    his_toa_kc numeric(5)  not null,
+
+    his_toaexpert_rank  numeric(10) not null,
+    his_toaexpert_kc numeric(5)  not null,
+
+    his_zuk_rank  numeric(10) not null,
+    his_zuk_kc numeric(5)  not null,
+
+    his_jad_rank  numeric(10) not null,
+    his_jad_kc numeric(5)  not null,
+
+    his_vardorvis_rank  numeric(10) not null,
+    his_vardorvis_kc numeric(5)  not null,
+
+    his_venenatis_rank  numeric(10) not null,
+    his_venenatis_kc numeric(5)  not null,
+
+    his_vetion_rank  numeric(10) not null,
+    his_vetion_kc numeric(5)  not null,
+
+    his_vorkath_rank  numeric(10) not null,
+    his_vorkath_kc numeric(5)  not null,
+
+    his_wintertodt_rank  numeric(10) not null,
+    his_wintertodt_kc numeric(5)  not null,
+
+    his_zalcano_rank  numeric(10) not null,
+    his_zalcano_kc numeric(5)  not null,
+
+    his_zulrah_rank  numeric(10) not null,
+    his_zulrah_kc numeric(5)  not null,
+    
 );

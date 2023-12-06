@@ -51,7 +51,21 @@ public class HiscoreDao {
             " his_agility_rank, his_agility_level, his_thieving_xp, his_thieving_rank, his_thieving_level, his_slayer_xp," +
             " his_slayer_rank, his_slayer_level, his_farming_xp, his_farming_rank, his_farming_level, his_runecraft_xp," +
             " his_runecraft_rank, his_runecraft_level, his_hunter_xp, his_hunter_rank, his_hunter_level, his_construction_xp," +
-            " his_construction_rank, his_construction_level) values (:userId, current_timestamp, :overallXp, :overallRank, :overallLevel," +
+            " his_construction_rank, his_construction_level, his_gotr_rank, his_gotr_kc, his_sire_rank, his_sire_kc, his_hydra_rank," +
+            " his_hyrdra_kc, his_artio_rank, his_artio_kc, his_barrows_rank, his_barrows_kc, his_bryophyta_rank, his_bryophyta_kc," +
+            " his_callisto_rank, his_callisto_kc, his_calvarion_rank, his_calvarion_kc, his_cerberus_rank, his_cerberus_kc, his_cox_rank," +
+            " his_cox_kc, his_coxcm_rank, his_coxcm_kc, his_ce_rank, his_ce_kc, his_cf_rank, his_cf_kc, his_zilyana_rank, his_zilyana_kc," +
+            " his_corp_rank, his_corp_kc, his_ca_rank, his_ca_kc, his_prime_rank, his_prime_kc, his_rex_rank, his_rex_kc, his_supreme_rank," + 
+            " his_supreme_kc, his_deranged_rank, his_deranged_kc, his_duke_rank, his_duke_kc, his_graadror_rank, his_graardor_kc, his_mole_rank," +
+            " his_mole_kc, his_gg_rank, his_gg_kc, his_hespori_rank, his_hespori_kc, his_kq_rank, his_kq_kc, his_kbd_rank, his_kbd_kc, his_kraken_rank," +
+            " his_kraken_kc, his_kreearra_rank, his_kreearra_kc, his_kril_rank, his_kril_kc, his_mimic_rank, his_mimic_kc, his_nex_rank, his_nex_kc," + 
+            " his_nightmare_rank, his_nightmare_kc, his_phosanis_rank, his_phosanis_kc, his_obor_rank, his_obor_kc, his_muspah_rank, his_muspah_kc," +
+            " his_sarachnis_rank, his_sarachnis_kc, his_scorpia_rank, his_scorpia_kc, his_skotizo_rank, his_skotizo_kc, his_spindel_rank, his_spindel_kc," + 
+            " his_tempoross_rank, his_tempoross_kc, his_gauntlet_rank, his_gauntlet_kc, his_cg_rank, his_cg_kc, his_leviathan_rank, his_leviathan_kc," + 
+            " his_whisperer_rank, his_whisperer_kc, his_tob_rank, his_tob_kc, his_tobhm_rank, his_tobhm_kc, his_thermy_rank, his_thermy_kc, his_toa_rank," + 
+            " his_toa_kc, his_toaexpert_rank, his_toaexpert_kc, his_zuk_rank, his_zuk_kc, his_jad_rank, his_jad_kc, his_vardorvis_rank, his_vardorvis_kc," + 
+            " his_venenatis_rank, his_venenatis_kc, his_vetion_rank, his_vetion_kc, his_vorkath_rank, his_vorkath_kc, his_wintertodt_rank, his_wintertodt_kc," +
+            " his_zalcano_rank, his_zalcano_kc, his_zulrah_rank, his_zulrah_kc) values (:userId, current_timestamp, :overallXp, :overallRank, :overallLevel," +
             " :attackXp, :attackRank, :attackLevel, :defenceXp, :defenceRank, :defenceLevel, :strengthXp, :strengthRank," +
             " :strengthLevel, :hitpointsXp, :hitpointsRank, :hitpointsLevel, :rangedXp, :rangedRank, :rangedLevel, :prayerXp," +
             " :prayerRank, :prayerLevel, :magicXp, :magicRank, :magicLevel, :cookingXp, :cookingRank, :cookingLevel, :woodcuttingXp," +
@@ -60,7 +74,16 @@ public class HiscoreDao {
             " :smithingRank, :smithingLevel, :miningXp, :miningRank, :miningLevel, :herbloreXp, :herbloreRank, :herbloreLevel," +
             " :agilityXp, :agilityRank, :agilityLevel, :thievingXp, :thievingRank, :thievingLevel, :slayerXp, :slayerRank," +
             " :slayerLevel, :farmingXp, :farmingRank, :farmingLevel, :runecraftXp, :runecraftRank, :runecraftLevel, :hunterXp, :hunterRank, :hunterLevel," +
-            " :constructionXp, :constructionRank, :constructionLevel)";
+            " :constructionXp, :constructionRank, :constructionLevel, :gotrRank, :gotrKc, :sireRank, :sireKc, :hydraRank, :hyrdraKc, :artioRank, :artioKc," +
+            " :barrowsRank, :barrowsKc, :bryophytaRank, :bryophytaKc, :callistoRank, :callistoKc, :calvarionRank, :calvarionKc, :cerberusRank, :cerberusKc," + 
+            " :coxRank, :coxKc, :coxcmRank, :coxcmKc, :ceRank, :ceKc, :cfRank, :cfKc, :zilyanaRank, :zilyanaKc, :corpRank, :corpKc, :caRank, :caKc, :primeRank," + 
+            " :primeKc, :rexRank, :rexKc, :supremeRank, :supremeKc, :derangedRank, :derangedKc, :dukeRank, :dukeKc, :graadrorRank, :graardorKc, :moleRank, :moleKc," +
+            " :ggRank, :ggKc, :hesporiRank, :hesporiKc, :kqRank, :kqKc, :kbdRank, :kbdKc, :krakenRank, :krakenKc, :kreearraRank, :kreearraKc, :krilRank, :krilKc,+" +
+            " :mimicRank, :mimicKc, :nexRank, :nexKc, :nightmareRank, :nightmareKc, :phosanisRank, :phosanisKc, :oborRank, :oborKc, :muspahRank, :muspahKc, :sarachnisRank," +
+            " :sarachnisKc, :scorpiaRank, :scorpiaKc, :skotizoRank, :skotizoKc, :spindelRank, :spindelKc, :temporossRank, :temporossKc, :gauntletRank, :gauntletKc, :cgRank, :cgKc," + 
+            " :leviathanRank, :leviathanKc, :whispererRank, :whispererKc, :tobRank, :tobKc, :tobhmRank, :tobhmKc, :thermyRank, :thermyKc, :toaRank, :toaKc, :toaexpertRank," +
+            " :toaexpertKc, :zukRank, :zukKc, :jadRank, :jadKc, :vardorvisRank, :vardorvisKc, :venenatisRank, :venenatisKc, :vetionRank, :vetionKc, :vorkathRank, :vorkathKc," +
+            " :wintertodtRank, :wintertodtKc, :zalcanoRank, :zalcanoKc, :zulrahRank, :zulrahKc)";
 
     private NamedParameterJdbcTemplate namedJdbcTemplate;
 
@@ -199,7 +222,9 @@ public class HiscoreDao {
                 .addValue("hunterLevel", hiscoreData.getHunterLevel(), Types.NUMERIC)
                 .addValue("constructionXp", hiscoreData.getConstructionXp(), Types.NUMERIC)
                 .addValue("constructionRank", hiscoreData.getConstructionRank(), Types.NUMERIC)
-                .addValue("constructionLevel", hiscoreData.getConstructionLevel(), Types.NUMERIC);
+                .addValue("constructionLevel", hiscoreData.getConstructionLevel(), Types.NUMERIC)
+                
+                
     }
 
     private static class HiscoreRowMapper implements RowMapper<HiscoreData> {
@@ -283,6 +308,124 @@ public class HiscoreDao {
             data.setConstructionXp(rs.getInt("his_construction_xp"));
             data.setConstructionRank(rs.getInt("his_construction_rank"));
             data.setConstructionLevel(rs.getInt("his_construction_level"));
+            data.setGotrRank(rs.getInt("his_gotr_rank"));
+            data.setGotrKc(rs.getInt("his_gotr_kc"));
+            data.setSireRank(rs.getInt("his_sire_rank"));
+            data.setSireKc(rs.getInt("his_sire_kc"));
+            data.setHydraRank(rs.getInt("his_hydra_rank"));
+            data.setHyrdraKc(rs.getInt("his_hyrdra_kc"));
+            data.setArtioRank(rs.getInt("his_artio_rank"));
+            data.setArtioKc(rs.getInt("his_artio_kc"));
+            data.setBarrowsRank(rs.getInt("his_barrows_rank"));
+            data.setBarrowsKc(rs.getInt("his_barrows_kc"));
+            data.setBryophytaRank(rs.getInt("his_bryophyta_rank"));
+            data.setBryophytaKc(rs.getInt("his_bryophyta_kc"));
+            data.setCallistoRank(rs.getInt("his_callisto_rank"));
+            data.setCallistoKc(rs.getInt("his_callisto_kc"));
+            data.setCalvarionRank(rs.getInt("his_calvarion_rank"));
+            data.setCalvarionKc(rs.getInt("his_calvarion_kc"));
+            data.setCerberusRank(rs.getInt("his_cerberus_rank"));
+            data.setCerberusKc(rs.getInt("his_cerberus_kc"));
+            data.setCoxRank(rs.getInt("his_cox_rank"));
+            data.setCoxKc(rs.getInt("his_cox_kc"));
+            data.setCoxcmRank(rs.getInt("his_coxcm_rank"));
+            data.setCoxcmKc(rs.getInt("his_coxcm_kc"));
+            data.setCeRank(rs.getInt("his_ce_rank"));
+            data.setCeKc(rs.getInt("his_ce_kc"));
+            data.setCfRank(rs.getInt("his_cf_rank"));
+            data.setCfKc(rs.getInt("his_cf_kc"));
+            data.setZilyanaRank(rs.getInt("his_zilyana_rank"));
+            data.setZilyanaKc(rs.getInt("his_zilyana_kc"));
+            data.setCorpRank(rs.getInt("his_corp_rank"));
+            data.setCorpKc(rs.getInt("his_corp_kc"));
+            data.setCaRank(rs.getInt("his_ca_rank"));
+            data.setCaKc(rs.getInt("his_ca_kc"));
+            data.setPrimeRank(rs.getInt("his_prime_rank"));
+            data.setPrimeKc(rs.getInt("his_prime_kc"));
+            data.setRexRank(rs.getInt("his_rex_rank"));
+            data.setRexKc(rs.getInt("his_rex_kc"));
+            data.setSupremeRank(rs.getInt("his_supreme_rank"));
+            data.setSupremeKc(rs.getInt("his_supreme_kc"));
+            data.setDerangedRank(rs.getInt("his_deranged_rank"));
+            data.setDerangedKc(rs.getInt("his_deranged_kc"));
+            data.setDukeRank(rs.getInt("his_duke_rank"));
+            data.setDukeKc(rs.getInt("his_duke_kc"));
+            data.setGraadrorRank(rs.getInt("his_graadror_rank"));
+            data.setGraardorKc(rs.getInt("his_graardor_kc"));
+            data.setMoleRank(rs.getInt("his_mole_rank"));
+            data.setMoleKc(rs.getInt("his_mole_kc"));
+            data.setGgRank(rs.getInt("his_gg_rank"));
+            data.setGgKc(rs.getInt("his_gg_kc"));
+            data.setHesporiRank(rs.getInt("his_hespori_rank"));
+            data.setHesporiKc(rs.getInt("his_hespori_kc"));
+            data.setKqRank(rs.getInt("his_kq_rank"));
+            data.setKqKc(rs.getInt("his_kq_kc"));
+            data.setKbdRank(rs.getInt("his_kbd_rank"));
+            data.setKbdKc(rs.getInt("his_kbd_kc"));
+            data.setKrakenRank(rs.getInt("his_kraken_rank"));
+            data.setKrakenKc(rs.getInt("his_kraken_kc"));
+            data.setKreearraRank(rs.getInt("his_kreearra_rank"));
+            data.setKreearraKc(rs.getInt("his_kreearra_kc"));
+            data.setKrilRank(rs.getInt("his_kril_rank"));
+            data.setKrilKc(rs.getInt("his_kril_kc"));
+            data.setMimicRank(rs.getInt("his_mimic_rank"));
+            data.setMimicKc(rs.getInt("his_mimic_kc"));
+            data.setNexRank(rs.getInt("his_nex_rank"));
+            data.setNexKc(rs.getInt("his_nex_kc"));
+            data.setNightmareRank(rs.getInt("his_nightmare_rank"));
+            data.setNightmareKc(rs.getInt("his_nightmare_kc"));
+            data.setPhosanisRank(rs.getInt("his_phosanis_rank"));
+            data.setPhosanisKc(rs.getInt("his_phosanis_kc"));
+            data.setOborRank(rs.getInt("his_obor_rank"));
+            data.setOborKc(rs.getInt("his_obor_kc"));
+            data.setMuspahRank(rs.getInt("his_muspah_rank"));
+            data.setMuspahKc(rs.getInt("his_muspah_kc"));
+            data.setSarachnisRank(rs.getInt("his_sarachnis_rank"));
+            data.setSarachnisKc(rs.getInt("his_sarachnis_kc"));
+            data.setScorpiaRank(rs.getInt("his_scorpia_rank"));
+            data.setScorpiaKc(rs.getInt("his_scorpia_kc"));
+            data.setSkotizoRank(rs.getInt("his_skotizo_rank"));
+            data.setSkotizoKc(rs.getInt("his_skotizo_kc"));
+            data.setSpindelRank(rs.getInt("his_spindel_rank"));
+            data.setSpindelKc(rs.getInt("his_spindel_kc"));
+            data.setTemporossRank(rs.getInt("his_tempoross_rank"));
+            data.setTemporossKc(rs.getInt("his_tempoross_kc"));
+            data.setGauntletRank(rs.getInt("his_gauntlet_rank"));
+            data.setGauntletKc(rs.getInt("his_gauntlet_kc"));
+            data.setCgRank(rs.getInt("his_cg_rank"));
+            data.setCgKc(rs.getInt("his_cg_kc"));
+            data.setLeviathanRank(rs.getInt("his_leviathan_rank"));
+            data.setLeviathanKc(rs.getInt("his_leviathan_kc"));
+            data.setWhispererRank(rs.getInt("his_whisperer_rank"));
+            data.setWhispererKc(rs.getInt("his_whisperer_kc"));
+            data.setTobRank(rs.getInt("his_tob_rank"));
+            data.setTobKc(rs.getInt("his_tob_kc"));
+            data.setTobhmRank(rs.getInt("his_tobhm_rank"));
+            data.setTobhmKc(rs.getInt("his_tobhm_kc"));
+            data.setThermyRank(rs.getInt("his_thermy_rank"));
+            data.setThermyKc(rs.getInt("his_thermy_kc"));
+            data.setToaRank(rs.getInt("his_toa_rank"));
+            data.setToaKc(rs.getInt("his_toa_kc"));
+            data.setToaexpertRank(rs.getInt("his_toaexpert_rank"));
+            data.setToaexpertKc(rs.getInt("his_toaexpert_kc"));
+            data.setZukRank(rs.getInt("his_zuk_rank"));
+            data.setZukKc(rs.getInt("his_zuk_kc"));
+            data.setJadRank(rs.getInt("his_jad_rank"));
+            data.setJadKc(rs.getInt("his_jad_kc"));
+            data.setVardorvisRank(rs.getInt("his_vardorvis_rank"));
+            data.setVardorvisKc(rs.getInt("his_vardorvis_kc"));
+            data.setVenenatisRank(rs.getInt("his_venenatis_rank"));
+            data.setVenenatisKc(rs.getInt("his_venenatis_kc"));
+            data.setVetionRank(rs.getInt("his_vetion_rank"));
+            data.setVetionKc(rs.getInt("his_vetion_kc"));
+            data.setVorkathRank(rs.getInt("his_vorkath_rank"));
+            data.setVorkathKc(rs.getInt("his_vorkath_kc"));
+            data.setWintertodtRank(rs.getInt("his_wintertodt_rank"));
+            data.setWintertodtKc(rs.getInt("his_wintertodt_kc"));
+            data.setZalcanoRank(rs.getInt("his_zalcano_rank"));
+            data.setZalcanoKc(rs.getInt("his_zalcano_kc"));
+            data.setZulrahRank(rs.getInt("his_zulrah_rank"));
+            data.setZulrahKc(rs.getInt("his_zulrah_kc"));
 
             return data;
         }
