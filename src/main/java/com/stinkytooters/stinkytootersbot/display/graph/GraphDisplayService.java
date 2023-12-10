@@ -194,8 +194,10 @@ public class GraphDisplayService {
         List<HiscoreGraphDisplayBean> graphViewBeans = new ArrayList<>();
         for (User user : users) {
             HiscoreGraphDisplayBean graphViewBean = getHiscoreGraphViewBeanForUser(user.getId(), user.getName(), hiscoreEntry, daysBack, Timescale.DAYS);
-            if (graphViewBean.getDelta() > mininmumXpGain) {
-                graphViewBeans.add(graphViewBean);
+            if (hiscoreEntry.isSkill()) {
+                if (graphViewBean.getDelta() > mininmumXpGain) {
+                    graphViewBeans.add(graphViewBean);
+                }
             }
         }
 
