@@ -6,6 +6,8 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 @Named
@@ -20,16 +22,16 @@ public class UserResource extends AbstractDiscordResource {
         addCommands();
     }
 
-    public MessageCreateData addUser(String message) {
-        return userDisplayService.addUser(message);
+    public List<MessageCreateData> addUser(String message) {
+        return Arrays.asList(userDisplayService.addUser(message));
     }
 
-    private MessageCreateData updateUser(String message) {
+    private List<MessageCreateData> updateUser(String message) {
         return userDisplayService.updateUser(message);
     }
 
-    private MessageCreateData inactivateUser(String message) {
-        return userDisplayService.inactivateUser(message);
+    private List<MessageCreateData> inactivateUser(String message) {
+        return Arrays.asList(userDisplayService.inactivateUser(message));
     }
 
     private void addCommands() {

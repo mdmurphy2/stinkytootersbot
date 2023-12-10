@@ -3,10 +3,8 @@ package com.stinkytooters.stinkytootersbot.jobs.hiscores;
 import com.stinkytooters.stinkytootersbot.api.internal.hiscore.Hiscore;
 import com.stinkytooters.stinkytootersbot.api.internal.user.User;
 import com.stinkytooters.stinkytootersbot.api.internal.user.UserStatus;
-import com.stinkytooters.stinkytootersbot.bot.DiscordBot;
 import com.stinkytooters.stinkytootersbot.display.beans.HiscoreDisplayBean;
 import com.stinkytooters.stinkytootersbot.display.user.UserDisplayService;
-import com.stinkytooters.stinkytootersbot.service.hiscore.HiscoreService;
 import com.stinkytooters.stinkytootersbot.service.user.UserService;
 import com.stinkytooters.stinkytootersbot.service.user.UserUpdateService;
 import net.dv8tion.jda.api.JDA;
@@ -77,7 +75,8 @@ public class EmitDaysHiscoresToDiscordJob implements Job {
                 try {
                     Map<UserUpdateService.HiscoreReference, Hiscore> oldNew = userUpdateService.updateHiscoresFor(user, oneDayAgo);
                     HiscoreDisplayBean displayBean = userDisplayService.makeHiscoreDisplayBean(user, oldNew);
-                    discordClient.getTextChannelById(channelId).sendMessage(displayBean.getMessage()).complete();
+                    discordClient.getTextChannelById(channelId).sendMessage(displayBean.getSkillsMessage()).complete();
+                    discordClient.getTextChannelById(channelId).sendMessage(displayBean.getBossesMessage()).complete();
                 } catch (Exception ex) {
                     logger.error("Failed to emit hiscores for user ({})", user, ex);
                 }

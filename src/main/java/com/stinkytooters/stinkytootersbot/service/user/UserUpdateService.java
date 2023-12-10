@@ -5,7 +5,7 @@ import com.stinkytooters.stinkytootersbot.api.internal.hiscore.Hiscore;
 import com.stinkytooters.stinkytootersbot.api.internal.user.User;
 import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.OsrsHiscoreLiteData;
 import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.OsrsHiscoreLiteDataEntry;
-import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.Skill;
+import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.HiscoreEntry;
 import com.stinkytooters.stinkytootersbot.clients.OsrsHiscoreLiteClient;
 import com.stinkytooters.stinkytootersbot.service.hiscore.HiscoreService;
 import org.slf4j.Logger;
@@ -63,7 +63,7 @@ public class UserUpdateService {
             Hiscore hiscore = buildHiscoreFromHiscoreData(data);
             hiscore.setUserId(retrievedUser.getId());
 
-            Hiscore newHiscore =  hiscoreService.insertHiscore(hiscore);
+            Hiscore newHiscore = hiscoreService.insertHiscore(hiscore);
             scores.put(HiscoreReference.NEW, newHiscore);
             logger.info("Returning scores: {}", scores);
             return scores;
@@ -78,14 +78,15 @@ public class UserUpdateService {
 
     private Hiscore buildHiscoreFromHiscoreData(OsrsHiscoreLiteData data) {
         Hiscore hiscore = new Hiscore();
-        for (Skill skill : Skill.values()) {
-            OsrsHiscoreLiteDataEntry entry = data.getSkill(skill);
-            if (isHiscoreEntryValid(skill, entry)) {
-                hiscore.addXp(skill, entry.getXp());
-                hiscore.addRank(skill, entry.getRank());
-                hiscore.addLevel(skill, entry.getLevel());
+        for (HiscoreEntry hiscoreEntry : HiscoreEntry.getOrderedEntries()) {
+            OsrsHiscoreLiteDataEntry entry = data.getEntry(hiscoreEntry);
+            logger.info("Hiscore entry ({}) and entry ({})", hiscoreEntry, entry);
+            if (isHiscoreEntryValid(hiscoreEntry, entry)) {
+                hiscore.addXp(hiscoreEntry, entry.getXp());
+                hiscore.addRank(hiscoreEntry, entry.getRank());
+                hiscore.addLevelOrScore(hiscoreEntry, entry.getLevelOrScore());
             } else {
-                String message = String.format("Detected that hiscores may not be valid. Found abnormal entry (%s) - (%s). Aborting update.", skill, entry);
+                String message = String.format("Detected that hiscores may not be valid. Found abnormal entry (%s) - (%s). Aborting update.", hiscoreEntry, entry);
                 logger.error(message);
                 throw new ServiceException(message);
             }
@@ -93,17 +94,14 @@ public class UserUpdateService {
         return hiscore;
     }
 
-    private boolean isHiscoreEntryValid(Skill skill, OsrsHiscoreLiteDataEntry entry) {
-        boolean basicCheck = entry.getLevel() >= 0 && (entry.getRank() == -1 || entry.getRank() >= 0) && (entry.getXp() == -1 || entry.getXp() >= 0);
-
+    private boolean isHiscoreEntryValid(HiscoreEntry hiscoreEntry, OsrsHiscoreLiteDataEntry entry) {
         // If overall xp is 0, it's probably a bad entry
-        if (skill == Skill.OVERALL) {
+        if (hiscoreEntry == HiscoreEntry.OVERALL) {
             if (entry.getXp() <= 0) {
                 return false;
             }
         }
-
-        return basicCheck;
+        return true;
     }
 
     private Hiscore getHiscoreRelativeToOrEmpty(User user, Instant instant) {
@@ -113,10 +111,10 @@ public class UserUpdateService {
             Hiscore hiscore = new Hiscore();
             hiscore.setUserId(user.getId());
             hiscore.setUpdateTime(Instant.now());
-            for (Skill skill : Skill.values()) {
-                hiscore.addXp(skill, 0);
-                hiscore.addLevel(skill, 0);
-                hiscore.addRank(skill, 0);
+            for (HiscoreEntry hiscoreEntry : HiscoreEntry.values()) {
+                hiscore.addXp(hiscoreEntry, 0);
+                hiscore.addLevelOrScore(hiscoreEntry, 0);
+                hiscore.addRank(hiscoreEntry, 0);
             }
             return hiscore;
         }

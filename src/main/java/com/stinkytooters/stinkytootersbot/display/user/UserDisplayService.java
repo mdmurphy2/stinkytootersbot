@@ -6,7 +6,7 @@ import com.stinkytooters.stinkytootersbot.api.internal.user.User;
 import com.stinkytooters.stinkytootersbot.api.internal.user.UserBuilder;
 import com.stinkytooters.stinkytootersbot.api.internal.user.UserStatus;
 import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.OsrsHiscoreLiteData;
-import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.Skill;
+import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.HiscoreEntry;
 import com.stinkytooters.stinkytootersbot.clients.OsrsHiscoreLiteClient;
 import com.stinkytooters.stinkytootersbot.display.beans.HiscoreDisplayBean;
 import com.stinkytooters.stinkytootersbot.service.user.UserService;
@@ -108,10 +108,10 @@ public class UserDisplayService {
 
     }
 
-    public MessageCreateData updateUser(String message) {
+    public List<MessageCreateData> updateUser(String message) {
         String[] parts = message.split(" ");
         if (parts.length < 2) {
-            return createMessage(UPDATE_USER_USAGE);
+            return Arrays.asList(createMessage(UPDATE_USER_USAGE));
         }
 
         boolean afterUsername = false;
@@ -121,18 +121,18 @@ public class UserDisplayService {
             char currentChar = parts[i].charAt(0);
             if (currentChar == '-') {
                 if (parts[i].length() < 2) {
-                   return createMessage(UPDATE_USER_USAGE);
+                   return Arrays.asList(createMessage(UPDATE_USER_USAGE));
                 }
 
                 if (parts.length - 1 == i) {
-                    return createMessage(UPDATE_USER_USAGE);
+                    return Arrays.asList(createMessage(UPDATE_USER_USAGE));
                 }
 
                 args.put(parts[i], parts[i++ + 1]);
                 afterUsername = true;
             } else {
                 if (afterUsername) {
-                    return createMessage(UPDATE_USER_USAGE);
+                    return Arrays.asList(createMessage(UPDATE_USER_USAGE));
                 } else {
                     usernameParts.add(parts[i]);
                 }
@@ -140,7 +140,7 @@ public class UserDisplayService {
         }
 
         if (args.size() < 1 || !(args.containsKey("-d") || args.containsKey("-h")) ) {
-            return createMessage(UPDATE_USER_USAGE);
+            return Arrays.asList(createMessage(UPDATE_USER_USAGE));
         }
 
 
@@ -151,7 +151,7 @@ public class UserDisplayService {
                 int amountNumber = Integer.parseInt(amount);
                 now = now.minus(amountNumber, ChronoUnit.DAYS);
             } catch (Exception ex) {
-                return createMessage(UPDATE_USER_USAGE);
+                return Arrays.asList(createMessage(UPDATE_USER_USAGE));
             }
         }
 
@@ -161,7 +161,7 @@ public class UserDisplayService {
                 int amountNumber = Integer.parseInt(amount);
                 now = now.minus(amountNumber, ChronoUnit.HOURS);
             } catch (Exception ex) {
-                return createMessage(UPDATE_USER_USAGE);
+                return Arrays.asList(createMessage(UPDATE_USER_USAGE));
             }
         }
 
@@ -169,10 +169,15 @@ public class UserDisplayService {
         try {
             User user = UserBuilder.newBuilder().name(username).build();
             Map<HiscoreReference, Hiscore> hiscores = userUpdateService.updateHiscoresFor(user, now);
-            return createMessage(makeHiscoreDisplayBean(user, hiscores).getMessage());
+
+            HiscoreDisplayBean hiscoreDisplayBean = makeHiscoreDisplayBean(user, hiscores);
+            return Arrays.asList(
+                    createMessage(hiscoreDisplayBean.getSkillsMessage()),
+                    createMessage(hiscoreDisplayBean.getBossesMessage())
+            );
         } catch (Exception ex) {
             logger.error("An error occurred while updating user: {}", username, ex);
-            return createMessage(GENERIC_ERROR);
+            return Arrays.asList(createMessage(GENERIC_ERROR));
         }
     }
 
@@ -189,34 +194,65 @@ public class UserDisplayService {
         bean.setHoursSinceLastUpdate(hours);
         bean.setMinutesSinceLastUpdate(timeDifference.toMinutesPart());
 
-        for (Skill skill : Skill.values()) {
-            int newXp = newScore.getXp(skill);
-            int oldXp = oldScore.getXp(skill);
+        for (HiscoreEntry hiscoreEntry : HiscoreEntry.values()) {
+            int newXp = newScore.getXp(hiscoreEntry);
+            int oldXp = oldScore.getXp(hiscoreEntry);
 
-            int newLevels = newScore.getLevel(skill);
-            int oldLevels = oldScore.getLevel(skill);
+            int newLevelsOrScore = newScore.getLevelOrScore(hiscoreEntry);
+            int oldLevelsOrScore = oldScore.getLevelOrScore(hiscoreEntry);
 
-            int newRank = newScore.getRank(skill);
-            int oldRank = oldScore.getRank(skill);
+            int newRank = newScore.getRank(hiscoreEntry);
+            int oldRank = oldScore.getRank(hiscoreEntry);
 
-            if (newXp > oldXp) {
-                String skillDisplayString = capitalizeFirstLetter(skill.name());
-                bean.addXpGained(skillDisplayString, NumberFormat.getInstance().format(newXp - oldXp) + " xp");
-                bean.addLevelsGained(skillDisplayString, newLevels - oldLevels + " L");
+            String hiscoreEntryDisplayString = getHiscoreEntryDisplayString(hiscoreEntry.name());
+
+            boolean isValidEntry = false;
+            if (hiscoreEntry.isBoss()) {
+                logger.info("Boss ({}) - new levels or score ({}), old levels or score ({})", hiscoreEntry, newLevelsOrScore, oldLevelsOrScore);
+            }
+            if (hiscoreEntry.isSkill() && newXp > oldXp) {
+                bean.addXpGained(hiscoreEntryDisplayString, NumberFormat.getInstance().format(newXp - oldXp) + " xp");
+                bean.addLevelsGained(hiscoreEntryDisplayString, newLevelsOrScore - oldLevelsOrScore + " L");
+                isValidEntry = true;
+            } else if (hiscoreEntry.isBoss() && newLevelsOrScore > oldLevelsOrScore) {
+                bean.addBossScoreGained(hiscoreEntryDisplayString, newLevelsOrScore - oldLevelsOrScore + " kills");
+                isValidEntry = true;
+            }
+
+            if (isValidEntry) {
                 if (oldRank - newRank != 0) {
                     String updatedRank = NumberFormat.getInstance().format(oldRank - newRank) + " R";
                     if (oldRank == -1) {
-                        bean.addRanksGained(skillDisplayString, "0 R, NEW");
+                        bean.addRanksGained(hiscoreEntryDisplayString, "0 R, NEW");
                     } else {
-                        bean.addRanksGained(skillDisplayString, updatedRank);
+                        bean.addRanksGained(hiscoreEntryDisplayString, updatedRank);
                     }
                 } else {
-                    bean.addRanksGained(skillDisplayString, "0 R");
+                    bean.addRanksGained(hiscoreEntryDisplayString, "0 R");
                 }
             }
         }
 
         return bean;
+    }
+
+    private String getHiscoreEntryDisplayString(String string) {
+        String result = "";
+        if (string.contains("_")) {
+            String[] parts = string.split("_");
+            boolean first = true;
+            for (String part : parts){
+                if (first) {
+                    result += capitalizeFirstLetter(part);
+                    first = false;
+                } else {
+                    result += " " + capitalizeFirstLetter(part);
+                }
+            }
+        } else {
+            result = capitalizeFirstLetter(string);
+        }
+        return result;
     }
 
     private String capitalizeFirstLetter(String string) {

@@ -6,14 +6,13 @@ import com.stinkytooters.stinkytootersbot.api.internal.exception.ServiceExceptio
 import com.stinkytooters.stinkytootersbot.api.internal.hiscore.Hiscore;
 import com.stinkytooters.stinkytootersbot.api.internal.user.User;
 import com.stinkytooters.stinkytootersbot.api.internal.user.UserStatus;
-import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.Skill;
+import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.HiscoreEntry;
 import com.stinkytooters.stinkytootersbot.display.beans.HiscoreGraphDisplayBean;
 import com.stinkytooters.stinkytootersbot.service.hiscore.HiscoreService;
 import com.stinkytooters.stinkytootersbot.service.user.UserService;
 import com.sun.javafx.collections.ObservableListWrapper;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.embed.swing.JFXPanel;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Node;
@@ -24,7 +23,6 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.image.WritableImage;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
@@ -46,7 +44,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -55,12 +52,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -104,12 +96,12 @@ public class GraphDisplayService {
                 stOnly = true;
             }
 
-            Skill skill = Skill.OVERALL;
+            HiscoreEntry hiscoreEntry = HiscoreEntry.OVERALL;
             if (commandParts.contains("-skill")) {
-                skill = getSkill(commandParts);
+                hiscoreEntry = getSkill(commandParts);
             }
 
-            byte[] graph = generateGraph(daysBack, minimumXpGain, stOnly, skill);
+            byte[] graph = generateGraph(daysBack, minimumXpGain, stOnly, hiscoreEntry);
             if (graph != null && graph.length > 0) {
                 return generateGraphMessage(graph);
             } else {
@@ -175,7 +167,7 @@ public class GraphDisplayService {
         }
     }
 
-    private Skill getSkill(List<String> commandParts) {
+    private HiscoreEntry getSkill(List<String> commandParts) {
         int skillSpecifier = commandParts.indexOf("-skill");
         if (skillSpecifier + 1 >= commandParts.size())  {
             throw new InvalidCommandFormatException("A skill specifier must have a corresponding skill.");
@@ -183,13 +175,13 @@ public class GraphDisplayService {
 
         String skillCandidate = commandParts.get(skillSpecifier + 1).trim();
         try {
-            return Skill.valueOf(skillCandidate.toUpperCase());
+            return HiscoreEntry.valueOf(skillCandidate.toUpperCase());
         } catch (Exception ex) {
             throw new InvalidCommandFormatException("The value following the skill specifier (-skill) must be a skill.");
         }
     }
 
-    private byte[] generateGraph(int daysBack, int mininmumXpGain, boolean stOnly, Skill skill) {
+    private byte[] generateGraph(int daysBack, int mininmumXpGain, boolean stOnly, HiscoreEntry hiscoreEntry) {
         List<User> users = userService.getAllUsers()
                 .stream()
                 .filter(user -> user.getStatus() == UserStatus.ACTIVE)
@@ -201,13 +193,13 @@ public class GraphDisplayService {
 
         List<HiscoreGraphDisplayBean> graphViewBeans = new ArrayList<>();
         for (User user : users) {
-            HiscoreGraphDisplayBean graphViewBean = getHiscoreGraphViewBeanForUser(user.getId(), user.getName(), skill, daysBack, Timescale.DAYS);
+            HiscoreGraphDisplayBean graphViewBean = getHiscoreGraphViewBeanForUser(user.getId(), user.getName(), hiscoreEntry, daysBack, Timescale.DAYS);
             if (graphViewBean.getDelta() > mininmumXpGain) {
                 graphViewBeans.add(graphViewBean);
             }
         }
 
-        LineChart<String, Integer> lineChart = createLineChartFromGraphViewBeans(graphViewBeans);
+        LineChart<String, Integer> lineChart = createLineChartFromGraphViewBeans(graphViewBeans, hiscoreEntry);
 
         byte[] file = null;
         try {
@@ -243,7 +235,7 @@ public class GraphDisplayService {
         return future;
     }
 
-    private LineChart<String, Integer> createLineChartFromGraphViewBeans(List<HiscoreGraphDisplayBean> hiscoreGraphDisplayBeans) {
+    private LineChart<String, Integer> createLineChartFromGraphViewBeans(List<HiscoreGraphDisplayBean> hiscoreGraphDisplayBeans, HiscoreEntry hiscoreEntry) {
         hiscoreGraphDisplayBeans = hiscoreGraphDisplayBeans.stream().sorted(Comparator.comparing(HiscoreGraphDisplayBean::getId)).collect(Collectors.toList());
 
         SortedSet<String> allLabels = new TreeSet<>();
@@ -267,10 +259,15 @@ public class GraphDisplayService {
                 .mapToInt(HiscoreGraphDisplayBean::getMax)
                 .max().orElse(0);
 
-        NumberAxis xpAxis = new NumberAxis(Math.max(roundToNearestMillion(min - 1_000_000), 0), roundToNearestMillion(max) + 1_000_000, 1_000_000);
-        xpAxis.setLabel("XP");
+        NumberAxis xpOrKcAxis;
+        if (hiscoreEntry.isSkill()) {
+            xpOrKcAxis = new NumberAxis(Math.max(roundToNearestMillion(min - 1_000_000), 0), roundToNearestMillion(max) + 1_000_000, 1_000_000);
+        } else {
+            xpOrKcAxis = new NumberAxis(Math.max(roundToNearestTen(min - 10), 0), roundToNearestTen(max) + 10, 10);
+        }
+        xpOrKcAxis.setLabel("XP or Boss KC");
 
-        LineChart<String, Integer> lineChart = new LineChart(dateAxis, xpAxis);
+        LineChart<String, Integer> lineChart = new LineChart(dateAxis, xpOrKcAxis);
         for (HiscoreGraphDisplayBean viewBean : hiscoreGraphDisplayBeans) {
             XYChart.Series<String, Integer> series = new XYChart.Series<String, Integer>();
             series.setName(viewBean.getId());
@@ -299,26 +296,46 @@ public class GraphDisplayService {
         return ((i + 999_999) / 1_000_000) * 1_000_000;
     }
 
-    private HiscoreGraphDisplayBean getHiscoreGraphViewBeanForUser(Long userId, String username, Skill skill, int daysBack, Timescale timescale) {
+    static long roundToNearestTen(long input) {
+        long i = (long) Math.ceil(input);
+        return ((i + 9) / 10) * 10;
+    }
+
+    private HiscoreGraphDisplayBean getHiscoreGraphViewBeanForUser(Long userId, String username, HiscoreEntry hiscoreEntry, int daysBack, Timescale timescale) {
         logger.info("Getting hiscore graph view bean for user ({}) - ({}).", userId, username);
         Instant cutoffTime = LocalDate.now().atStartOfDay(CENTRAL_ZONE_ID).minusDays(daysBack).toInstant();
         List<Hiscore> hiscores = hiscoreService.getHiscoresForUserDaysBack(userId, daysBack);
 
-        hiscores = filterAndSortHiscores(hiscores, skill, cutoffTime, timescale);
+        hiscores = filterAndSortHiscores(hiscores, hiscoreEntry, cutoffTime, timescale);
         List<String> labels = buildLabels(hiscores, timescale);
-        List<Integer> data = buildData(hiscores, skill);
-        return buildViewBean(username, labels, data, cutoffTime, skill);
+        List<Integer> data = buildData(hiscores, hiscoreEntry);
+        return buildViewBean(username, labels, data, cutoffTime, hiscoreEntry);
     }
 
-    private List<Hiscore> filterAndSortHiscores(List<Hiscore> hiscores, Skill skill, Instant furthestTime, Timescale timescale) {
+    private List<Hiscore> filterAndSortHiscores(List<Hiscore> hiscores, HiscoreEntry hiscoreEntry, Instant furthestTime, Timescale timescale) {
         Map<String, Hiscore> greatestScoreForTimescale = new HashMap<>();
         for (Hiscore hiscore : hiscores) {
             if (hiscore.getUpdateTime().isAfter(furthestTime)) {
                 String dateKey = getDateKey(hiscore, timescale);
-                int xpInEntry = hiscore.getXp(skill);
+
+                int value = -1;
+                if (hiscoreEntry.isSkill()) {
+                    value = hiscore.getXp(hiscoreEntry);
+                } else if (hiscoreEntry.isBoss()) {
+                    value = hiscore.getLevelOrScore(hiscoreEntry);
+                }
                 Hiscore scoreForTimescaleEntry = greatestScoreForTimescale.get(dateKey);
-                int xpInTimescale =  scoreForTimescaleEntry == null ? Integer.MIN_VALUE : scoreForTimescaleEntry.getXp(skill);
-                if (xpInEntry > xpInTimescale) {
+
+                int valueInTimescale =  Integer.MIN_VALUE;
+                if (scoreForTimescaleEntry != null) {
+                    if (hiscoreEntry.isSkill()) {
+                        scoreForTimescaleEntry.getXp(hiscoreEntry);
+                    } else if (hiscoreEntry.isBoss()) {
+                        scoreForTimescaleEntry.getLevelOrScore(hiscoreEntry);
+                    }
+                }
+
+                if (value > valueInTimescale) {
                     greatestScoreForTimescale.put(dateKey, hiscore);
                 }
             }
@@ -354,15 +371,19 @@ public class GraphDisplayService {
         return new ArrayList<>(labels);
     }
 
-    private List<Integer> buildData(List<Hiscore> hiscores, Skill skill) {
-        return hiscores.stream().map(hs -> hs.getXp(skill)).collect(Collectors.toList());
+    private List<Integer> buildData(List<Hiscore> hiscores, HiscoreEntry hiscoreEntry) {
+        if (hiscoreEntry.isSkill()) {
+            return hiscores.stream().map(hs -> hs.getXp(hiscoreEntry)).collect(Collectors.toList());
+        } else {
+            return hiscores.stream().map(hs -> hs.getLevelOrScore(hiscoreEntry)).collect(Collectors.toList());
+        }
     }
 
-    private HiscoreGraphDisplayBean buildViewBean(String username, List<String> labels, List<Integer> data, Instant furthestTime, Skill skill) {
+    private HiscoreGraphDisplayBean buildViewBean(String username, List<String> labels, List<Integer> data, Instant furthestTime, HiscoreEntry hiscoreEntry) {
         HiscoreGraphDisplayBean viewBean = new HiscoreGraphDisplayBean();
         Instant now = Instant.now();
         Period period = Period.between(LocalDate.ofInstant(furthestTime, CENTRAL_ZONE_ID), LocalDate.ofInstant(now, CENTRAL_ZONE_ID));
-        viewBean.setDataLabel(username + " - " + period.getMonths() + " month(s) and " + period.getDays() + " day(s) (" + skill.name().toLowerCase() + ")");
+        viewBean.setDataLabel(username + " - " + period.getMonths() + " month(s) and " + period.getDays() + " day(s) (" + hiscoreEntry.name().toLowerCase() + ")");
         viewBean.setId(username);
         viewBean.setLabels(labels);
         viewBean.setData(data);

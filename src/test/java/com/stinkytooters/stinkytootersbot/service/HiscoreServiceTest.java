@@ -2,14 +2,12 @@ package com.stinkytooters.stinkytootersbot.service;
 
 import com.stinkytooters.stinkytootersbot.api.internal.exception.ServiceException;
 import com.stinkytooters.stinkytootersbot.api.internal.hiscore.Hiscore;
-import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.Skill;
+import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.HiscoreEntry;
 import com.stinkytooters.stinkytootersbot.service.hiscore.HiscoreService;
 import com.stinkytooters.stinkytootersbot.service.hiscore.data.HiscoreDao;
 import com.stinkytooters.stinkytootersbot.service.hiscore.data.HiscoreData;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -53,9 +51,9 @@ public class HiscoreServiceTest {
 
         // expect: the data matches expectations
         assertNotNull(hiscore);
-        assertEquals("Has levels for all skills", hiscore.getLevel().size(), Skill.values().length);
-        assertEquals("Has rank for all skills", hiscore.getRank().size(), Skill.values().length);
-        assertEquals("Has xp for all skills", hiscore.getXp().size(), Skill.values().length);
+        assertEquals("Has levels for all skills", hiscore.getLevelOrScore().size(), HiscoreEntry.values().length);
+        assertEquals("Has rank for all skills", hiscore.getRank().size(), HiscoreEntry.values().length);
+        assertEquals("Has xp for all skills", hiscore.getXp().size(), HiscoreEntry.values().length);
         verify(hiscoreDao, times(1)).getLatestHiscoresByUserId(anyLong());
     }
 
@@ -78,14 +76,14 @@ public class HiscoreServiceTest {
         hiscore.setUpdateTime(Instant.now());
 
         Random random = new Random();
-        for (Skill skill : Skill.values()) {
+        for (HiscoreEntry hiscoreEntry : HiscoreEntry.values()) {
             int xp = random.nextInt(MAX_XP) + 1;
             int rank = random.nextInt(MAX_RANK) + 1;
             int level = random.nextInt(MAX_LEVEL) + 1;
 
-            hiscore.addXp(skill, xp);
-            hiscore.addRank(skill, rank);
-            hiscore.addLevel(skill, level);
+            hiscore.addXp(hiscoreEntry, xp);
+            hiscore.addRank(hiscoreEntry, rank);
+            hiscore.addLevelOrScore(hiscoreEntry, level);
         }
 
         return Optional.of(HiscoreData.from(hiscore));

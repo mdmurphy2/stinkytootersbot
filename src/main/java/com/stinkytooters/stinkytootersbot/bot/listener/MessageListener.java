@@ -60,11 +60,13 @@ public class MessageListener extends ListenerAdapter {
 
     private void executeCommand(Command command, MessageReceivedEvent event, String message) {
         CompletableFuture.supplyAsync(() -> command.execute(message))
-                .thenAccept((result) -> sendMessage(event, result))
+                .thenAccept((result) -> sendMessages(event, result))
                 .orTimeout(1, TimeUnit.MINUTES);
     }
 
-    private void sendMessage(MessageReceivedEvent event, MessageCreateData message) {
-        event.getChannel().asTextChannel().sendMessage(message).queue();
+    private void sendMessages(MessageReceivedEvent event, List<MessageCreateData> messages) {
+        for (MessageCreateData message : messages) {
+            event.getChannel().asTextChannel().sendMessage(message).queue();
+        }
     }
 }

@@ -6,6 +6,8 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 @Named
@@ -20,8 +22,8 @@ public class HiscoreGraphResource extends AbstractDiscordResource {
         addCommands();
     }
 
-    public MessageCreateData graph(String message) {
-        return graphDisplayService.createGraph(message);
+    public List<MessageCreateData> graph(String message) {
+        return Arrays.asList(graphDisplayService.createGraph(message));
     }
 
     private void addCommands() {

@@ -5,48 +5,48 @@ import java.util.TreeMap;
 
 public class OsrsHiscoreLiteData {
 
-    private final Map<Skill, OsrsHiscoreLiteDataEntry> hiscores;
+    private final Map<HiscoreEntry, OsrsHiscoreLiteDataEntry> hiscores;
 
     public OsrsHiscoreLiteData() {
         this.hiscores = new TreeMap<>();
-        for (Skill skill : Skill.values()) {
-            hiscores.put(skill, new OsrsHiscoreLiteDataEntry());
+        for (HiscoreEntry hiscoreEntry : HiscoreEntry.values()) {
+            hiscores.put(hiscoreEntry, new OsrsHiscoreLiteDataEntry());
         }
     };
 
-    public void setSkill(Skill skill, OsrsHiscoreLiteDataEntry entry)  {
-        hiscores.put(skill, entry);
+    public void setHiscoreEntry(HiscoreEntry hiscoreEntry, OsrsHiscoreLiteDataEntry entry)  {
+        hiscores.put(hiscoreEntry, entry);
     }
 
-    public OsrsHiscoreLiteDataEntry getSkill(Skill skill) {
-        return hiscores.get(skill);
+    public OsrsHiscoreLiteDataEntry getEntry(HiscoreEntry hiscoreEntry) {
+        return hiscores.get(hiscoreEntry);
     }
 
-    public int getSkillXpOr(Skill skill, int value) {
-        if (hiscores.containsKey(skill)) {
-            return hiscores.get(skill).getXp();
+    public int getSkillOrScoreOr(HiscoreEntry hiscoreEntry, int value) {
+        if (hiscores.containsKey(hiscoreEntry)) {
+            return hiscores.get(hiscoreEntry).getXp();
         } else {
             return value;
         }
     }
 
-    public int getRankOr(Skill skill, int value) {
-        if (hiscores.containsKey(skill)) {
-            return hiscores.get(skill).getRank();
+    public int getRankOr(HiscoreEntry hiscoreEntry, int value) {
+        if (hiscores.containsKey(hiscoreEntry)) {
+            return hiscores.get(hiscoreEntry).getRank();
         } else {
             return value;
         }
     }
 
-    public int getLevelOr(Skill skill, int value) {
-        if (hiscores.containsKey(skill)) {
-            return hiscores.get(skill).getLevel();
+    public int getLevelOr(HiscoreEntry hiscoreEntry, int value) {
+        if (hiscores.containsKey(hiscoreEntry)) {
+            return hiscores.get(hiscoreEntry).getLevelOrScore();
         } else {
             return value;
         }
     }
 
-    public Map<Skill, OsrsHiscoreLiteDataEntry> getHiscores() {
+    public Map<HiscoreEntry, OsrsHiscoreLiteDataEntry> getHiscores() {
         return hiscores;
     }
 

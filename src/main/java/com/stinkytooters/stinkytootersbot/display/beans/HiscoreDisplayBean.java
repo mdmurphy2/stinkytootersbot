@@ -15,11 +15,13 @@ public class HiscoreDisplayBean {
     private final Map<String, String> xpGained;
     private final Map<String, String> levelsGained;
     private final Map<String, String> ranksGained;
+    private final Map<String, String> bossScoreGained;
 
     public HiscoreDisplayBean() {
         xpGained = new LinkedHashMap<>();
         levelsGained = new LinkedHashMap<>();
         ranksGained = new LinkedHashMap<>();
+        bossScoreGained = new LinkedHashMap<>();
     }
 
     public void addXpGained(String skill, String xp) {
@@ -34,6 +36,10 @@ public class HiscoreDisplayBean {
         ranksGained.put(skill, ranks);
     }
 
+    public void addBossScoreGained(String boss, String ranks) {
+        bossScoreGained.put(boss, ranks);
+    }
+
     public void setUser(String user) {
         this.user = user;
     }
@@ -46,8 +52,8 @@ public class HiscoreDisplayBean {
         this.minutesSinceLastUpdate = minutes;
     }
 
-    public String getMessage() {
-        StringBuilder message  = new StringBuilder(1024);
+    public String getSkillsMessage() {
+        StringBuilder message = new StringBuilder(1024);
         message.append("```");
 
         message.append(String.format("%s - (Gains for past: %d hour(s) %d minute(s))", user, hoursSinceLastUpdate, minutesSinceLastUpdate));
@@ -69,7 +75,7 @@ public class HiscoreDisplayBean {
                 message.append(" ".repeat(max(COLUMN_WIDTH - skill.length(), 0)));
                 message.append("\n");
 
-                while(!toPrint.isEmpty()) {
+                while (!toPrint.isEmpty()) {
                     List<String> gainsList = toPrint.remove();
                     xpGained = gainsList.get(0);
                     levelsGained = gainsList.get(1);
@@ -90,8 +96,7 @@ public class HiscoreDisplayBean {
         }
 
         // printing xp differences
-        message.append("\n");
-        while(!toPrint.isEmpty()) {
+        while (!toPrint.isEmpty()) {
             List<String> gainsList = toPrint.remove();
             String xpGained = gainsList.get(0);
             String levelsGained = gainsList.get(1);
@@ -101,6 +106,63 @@ public class HiscoreDisplayBean {
             message.append(gains);
             message.append(" ".repeat(COLUMN_WIDTH - gains.length()));
         }
+        message.append("```");
+        return message.toString();
+    }
+
+    public String getBossesMessage() {
+        StringBuilder message = new StringBuilder(1024);
+        message.append("```");
+
+        message.append(String.format("%s - (Boss Gains for past: %d hour(s) %d minute(s))", user, hoursSinceLastUpdate, minutesSinceLastUpdate));
+        message.append("\n\n");
+
+        // Bosses
+        int index = 0;
+        Queue<List<String>> toPrint = new LinkedList<>();
+        for (Map.Entry<String, String> entry : bossScoreGained.entrySet()) {
+            String boss = entry.getKey();
+
+            String scoreGained = this.bossScoreGained.get(boss);
+            String ranksGained = this.ranksGained.get(boss);
+            toPrint.add(Arrays.asList(scoreGained, ranksGained));
+
+            if ((index + 1) % 3 == 0) {
+                // printing xp differences
+                message.append(boss);
+                message.append(" ".repeat(max(COLUMN_WIDTH - boss.length(), 0)));
+                message.append("\n");
+
+                while(!toPrint.isEmpty()) {
+                    List<String> gainsList = toPrint.remove();
+                    scoreGained = gainsList.get(0);
+                    ranksGained = gainsList.get(1);
+
+                    String gains = scoreGained + " | " + ranksGained;
+                    message.append(gains);
+                    message.append(" ".repeat(max(COLUMN_WIDTH - gains.length(), 0)));
+                }
+                message.append("\n\n");
+            } else {
+                // printing column names
+                message.append(boss);
+                message.append(" ".repeat(max(COLUMN_WIDTH - boss.length(), 0)));
+            }
+            index++;
+        }
+
+        // printing xp differences
+        message.append("\n");
+        while(!toPrint.isEmpty()) {
+            List<String> gainsList = toPrint.remove();
+            String scoreGained = gainsList.get(0);
+            String ranksGained = gainsList.get(1);
+
+            String gains = scoreGained + " | " + ranksGained;
+            message.append(gains);
+            message.append(" ".repeat(max(COLUMN_WIDTH - gains.length(), 0)));
+        }
+
         message.append("\n```");
 
         return message.toString();
