@@ -198,6 +198,8 @@ public class GraphDisplayService {
                 if (graphViewBean.getDelta() > mininmumXpGain) {
                     graphViewBeans.add(graphViewBean);
                 }
+            } else {
+                graphViewBeans.add(graphViewBean);
             }
         }
 
