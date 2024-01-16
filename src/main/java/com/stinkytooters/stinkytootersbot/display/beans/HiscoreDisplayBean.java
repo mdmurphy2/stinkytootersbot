@@ -96,6 +96,7 @@ public class HiscoreDisplayBean {
         }
 
         // printing xp differences
+        message.append("\n");
         while (!toPrint.isEmpty()) {
             List<String> gainsList = toPrint.remove();
             String xpGained = gainsList.get(0);
