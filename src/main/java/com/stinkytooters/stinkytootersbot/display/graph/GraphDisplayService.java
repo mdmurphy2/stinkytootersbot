@@ -96,19 +96,32 @@ public class GraphDisplayService {
                 stOnly = true;
             }
 
+            String user = null;
+            if (commandParts.contains("-u")) {
+                if (stOnly) {
+                    return generateUsageMessage("Graph can command can take either '-u' or '-st' but not both.");
+                }
+                user = getUser(commandParts);
+            }
+
             HiscoreEntry hiscoreEntry = HiscoreEntry.OVERALL;
             if (commandParts.contains("-skill")) {
                 hiscoreEntry = getSkill(commandParts);
             }
 
-            byte[] graph = generateGraph(daysBack, minimumXpGain, stOnly, hiscoreEntry);
-            if (graph != null && graph.length > 0) {
-                return generateGraphMessage(graph);
-            } else {
-                logger.error("Graph for command ({}) was null or empty after generating.", command);
-                return generateUnexpectedErrorMessage();
+            try {
+                byte[] graph = generateGraph(daysBack, minimumXpGain, user, stOnly, hiscoreEntry);
+                if (graph != null && graph.length > 0) {
+                    return generateGraphMessage(graph);
+                } else {
+                    logger.error("Graph for command ({}) was null or empty after generating.", command);
+                    return generateUnexpectedErrorMessage();
+                }
+            } catch (GraphGenerationException ex) {
+                String message = String.format("An error occurred while generating a graph. (%s).", ex.getMessage());
+                logger.warn(message);
+                return generateUsageMessage(ex.getMessage());
             }
-
         } catch (InvalidCommandFormatException ex) {
             String message = String.format("Given command (%s) was an invalid format. %s", command, ex.getMessage());
             logger.warn(message);
@@ -167,6 +180,26 @@ public class GraphDisplayService {
         }
     }
 
+    private String getUser(List<String> commandParts) {
+        int userSpecifier = commandParts.indexOf("-u");
+        if (userSpecifier + 1 >= commandParts.size())  {
+            throw new InvalidCommandFormatException("A user specifier must have a corresponding user name.");
+        }
+
+        String username = "";
+        for (int i = userSpecifier + 1; i < commandParts.size(); i++) {
+            String part = commandParts.get(i).trim();
+            if (!part.startsWith("-")) {
+                username += " " + part;
+            } else {
+                break;
+            }
+        }
+        username = username.trim();
+
+        return username;
+    }
+
     private HiscoreEntry getSkill(List<String> commandParts) {
         int skillSpecifier = commandParts.indexOf("-skill");
         if (skillSpecifier + 1 >= commandParts.size())  {
@@ -181,14 +214,22 @@ public class GraphDisplayService {
         }
     }
 
-    private byte[] generateGraph(int daysBack, int mininmumXpGain, boolean stOnly, HiscoreEntry hiscoreEntry) {
+    private byte[] generateGraph(int daysBack, int mininmumXpGain, String filterUser, boolean stOnly, HiscoreEntry hiscoreEntry) {
         List<User> users = userService.getAllUsers()
                 .stream()
-                .filter(user -> user.getStatus() == UserStatus.ACTIVE)
+                .filter(u -> u.getStatus() == UserStatus.ACTIVE)
                 .collect(Collectors.toList());
+
+        if (filterUser != null && !filterUser.isEmpty()) {
+            users = filterUser(users, filterUser);
+        }
 
         if (stOnly) {
             users = filterStOnly(users);
+        }
+
+        if (users == null || users.isEmpty()) {
+            throw new GraphGenerationException("No users were found after filtering to specified users.");
         }
 
         List<HiscoreGraphDisplayBean> graphViewBeans = new ArrayList<>();
@@ -404,6 +445,10 @@ public class GraphDisplayService {
             }
         }
         return stOnly;
+    }
+
+    private List<User> filterUser(List<User> users, String user) {
+        return users.stream().filter(u -> u.getName().equalsIgnoreCase(user)).collect(Collectors.toList());
     }
 
 }
