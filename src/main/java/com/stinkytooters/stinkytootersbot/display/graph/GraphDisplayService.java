@@ -63,7 +63,7 @@ public class GraphDisplayService {
 
     private static final ZoneId CENTRAL_ZONE_ID = ZoneId.of("America/Chicago");
 
-    private static final String USAGE = "!graph [-d <daysBack>] [-m <minimumXpGained>] [-st (should only show stinky tooters)]";
+    private static final String USAGE = "!graph [-d <daysBack>] [-m <minimumXpGained>] [-u <user> | -st (stinky tooters)]";
     private static final String UNEXPECTED_ERROR = "An unexpected error occurred while generating a graph, please try again.";
     private static final Set<String> ST_USERS = Stream.of("st jamie", "st juicy", "st snag", "st zecuity", "me rf")
             .collect(Collectors.toSet());
