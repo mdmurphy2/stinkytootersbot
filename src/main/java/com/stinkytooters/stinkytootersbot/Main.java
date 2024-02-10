@@ -28,6 +28,9 @@ public class Main implements CommandLineRunner {
     @Inject
     private FixupZulrahData fixupZulrahData;
 
+    @Inject
+    private MigrateData migrateData;
+
 
     public static void main(String[] args) throws IOException {
         try {
@@ -39,7 +42,9 @@ public class Main implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        schedulingConfiguration.schedule();
-        discordBot.listen();
+//        schedulingConfiguration.schedule();
+//        discordBot.listen();
+        migrateData.execute();
+//        fixupZulrahData.run();
     }
 }

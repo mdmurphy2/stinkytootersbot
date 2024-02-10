@@ -90,7 +90,7 @@ public class MigrateData {
             }
 
             if (currentRank > oldMaxRank) {
-                maxZulrahRankByUserId.put(hiscore.getUserId(), oldMaxKc);
+                maxZulrahRankByUserId.put(hiscore.getUserId(), currentRank);
             }
         } else {
             int scurrius = orderedEntries.indexOf(HiscoreEntry.SCURRIUS);

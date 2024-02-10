@@ -51,7 +51,6 @@ public class FixupZulrahData {
                 if (maxZurlahKc > zulrahEntry.getKillcount()) {
                     logger.info("Updating hiscore {} to have zulrah kc {}.", hiscoreV2.getUpdateTime(), maxZurlahKc);
                     zulrahEntry.setKillcount(maxZurlahKc);
-                    // TODO: Persist
                     hiscoreV2Service.updateBossEntry(hiscoreV2.getId(), zulrahEntry);
                 }
             }

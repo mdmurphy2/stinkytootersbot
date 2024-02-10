@@ -176,7 +176,7 @@ public class HiscoreV2Dao {
 
     public BossEntryData updateBossEntry(BossEntryData bossEntryData) {
         MapSqlParameterSource parameters = new MapSqlParameterSource()
-                .addValue("recordId", bossEntryData.getHiscoreEntryId(), Types.NUMERIC)
+                .addValue("recordId", bossEntryData.getId(), Types.NUMERIC)
                 .addValue("bossId", bossEntryData.getBossId(), Types.NUMERIC)
                 .addValue("killcount", bossEntryData.getKillcount(), Types.NUMERIC)
                 .addValue("rank", bossEntryData.getRank(), Types.NUMERIC);
