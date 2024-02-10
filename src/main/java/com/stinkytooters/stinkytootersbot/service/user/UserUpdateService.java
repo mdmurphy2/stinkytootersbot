@@ -3,6 +3,7 @@ package com.stinkytooters.stinkytootersbot.service.user;
 import com.stinkytooters.stinkytootersbot.api.internal.exception.ServiceException;
 import com.stinkytooters.stinkytootersbot.api.internal.hiscore.Boss;
 import com.stinkytooters.stinkytootersbot.api.internal.hiscore.BossEntry;
+import com.stinkytooters.stinkytootersbot.api.internal.hiscore.Hiscore;
 import com.stinkytooters.stinkytootersbot.api.internal.hiscore.HiscoreV2;
 import com.stinkytooters.stinkytootersbot.api.internal.hiscore.Skill;
 import com.stinkytooters.stinkytootersbot.api.internal.hiscore.SkillEntry;
@@ -11,6 +12,7 @@ import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.OsrsHiscoreLiteData;
 import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.OsrsHiscoreLiteDataEntry;
 import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.HiscoreEntry;
 import com.stinkytooters.stinkytootersbot.clients.OsrsHiscoreLiteClient;
+import com.stinkytooters.stinkytootersbot.service.hiscore.HiscoreService;
 import com.stinkytooters.stinkytootersbot.service.v2.hiscore.HiscoreV2Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,13 +43,15 @@ public class UserUpdateService {
 
     private final UserService userService;
     private final HiscoreV2Service hiscoreService;
+    private final HiscoreService legacyHiscoreService;
     private final OsrsHiscoreLiteClient osrsHiscoreLiteClient;
 
     @Inject
-    public UserUpdateService(UserService userService, HiscoreV2Service hiscoreService, OsrsHiscoreLiteClient osrsHiscoreLiteClient) {
+    public UserUpdateService(UserService userService, HiscoreV2Service hiscoreService, HiscoreService legacyHiscoreService, OsrsHiscoreLiteClient osrsHiscoreLiteClient) {
         this.userService = Objects.requireNonNull(userService, "UserService is required.");
         this.hiscoreService = Objects.requireNonNull(hiscoreService, "HiscoreService is required.");
         this.osrsHiscoreLiteClient = Objects.requireNonNull(osrsHiscoreLiteClient, "OsrsHiscoreLiteClient is required.");
+        this.legacyHiscoreService = Objects.requireNonNull(legacyHiscoreService, "LegacyHiscoreService is required.");
     }
 
     public Map<HiscoreReference, HiscoreV2> updateHiscoresFor(User user, Instant relativeTo) {
@@ -68,6 +72,10 @@ public class UserUpdateService {
             OsrsHiscoreLiteData data = hiscoreDataOptional.get();
             HiscoreV2 hiscore = buildHiscoreFromHiscoreData(data);
             hiscore.setUserId(retrievedUser.getId());
+
+            Hiscore legacyHiscore = buildLegacyHiscoreFromHiscoreData(data);
+            legacyHiscore.setUserId(retrievedUser.getId());
+            legacyHiscoreService.insertHiscore(legacyHiscore);
 
             HiscoreV2 newHiscore = hiscoreService.insertHiscore(hiscore);
             scores.put(HiscoreReference.NEW, newHiscore);
@@ -106,6 +114,24 @@ public class UserUpdateService {
                         hiscore.addBoss(bossEntry);
                     }
                 }
+            } else {
+                String message = String.format("Detected that hiscores may not be valid. Found abnormal entry (%s) - (%s). Aborting update.", hiscoreEntry, entry);
+                logger.error(message);
+                throw new ServiceException(message);
+            }
+        }
+        return hiscore;
+    }
+
+    private Hiscore buildLegacyHiscoreFromHiscoreData(OsrsHiscoreLiteData data) {
+        Hiscore hiscore = new Hiscore();
+        for (HiscoreEntry hiscoreEntry : HiscoreEntry.getOrderedEntries()) {
+            OsrsHiscoreLiteDataEntry entry = data.getEntry(hiscoreEntry);
+            logger.info("Hiscore entry ({}) and entry ({})", hiscoreEntry, entry);
+            if (isHiscoreEntryValid(hiscoreEntry, entry)) {
+                hiscore.addXp(hiscoreEntry, entry.getXp());
+                hiscore.addRank(hiscoreEntry, entry.getRank());
+                hiscore.addLevelOrScore(hiscoreEntry, entry.getLevelOrScore());
             } else {
                 String message = String.format("Detected that hiscores may not be valid. Found abnormal entry (%s) - (%s). Aborting update.", hiscoreEntry, entry);
                 logger.error(message);

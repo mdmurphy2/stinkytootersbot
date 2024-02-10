@@ -1,5 +1,6 @@
 package com.stinkytooters.stinkytootersbot.scripts;
 
+import com.iwebpp.crypto.TweetNaclFast;
 import com.stinkytooters.stinkytootersbot.api.internal.hiscore.Boss;
 import com.stinkytooters.stinkytootersbot.api.internal.hiscore.BossEntry;
 import com.stinkytooters.stinkytootersbot.api.internal.hiscore.Hiscore;
@@ -20,10 +21,12 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Named
 public class MigrateData {
@@ -39,6 +42,9 @@ public class MigrateData {
     private final HiscoreV2Service hiscoreV2Service;
     private final HiscoreService hiscoreService;
 
+    private final Map<Long, Long> maxZulrahKcByUserId = new HashMap<>();
+    private final Map<Long, Long> maxZulrahRankByUserId = new HashMap<>();
+
     @Inject
     public MigrateData(HiscoreV2Service hiscoreV2Service, HiscoreService hiscoreService) {
         this.hiscoreV2Service = Objects.requireNonNull(hiscoreV2Service, "HiscoreV2Service is required.");
@@ -47,7 +53,10 @@ public class MigrateData {
 
     public void execute() {
         logger.info("Executing migrate data script.");
-        List<Hiscore> hiscores = hiscoreService.getAllHiscores();
+        List<Hiscore> hiscores = hiscoreService.getAllHiscores()
+                .stream()
+                .sorted(Comparator.comparing(Hiscore::getUpdateTime))
+                .collect(Collectors.toList());
         logger.info("Got {} legacy hiscores.", hiscores.size());
 
         List<HiscoreV2> newHiscores = new ArrayList<>();
@@ -68,6 +77,20 @@ public class MigrateData {
         if (hiscore.getUpdateTime().isBefore(BROKEN_TIMESTAMP)) {
             for (HiscoreEntry entry : orderedEntries) {
                 addEntry(entry, hiscore, hiscoreV2);
+            }
+
+            Long oldMaxKc = maxZulrahKcByUserId.getOrDefault(hiscore.getUserId(), -1L);
+            Long oldMaxRank = maxZulrahRankByUserId.getOrDefault(hiscore.getUserId(), -1L);
+
+            Long currentKc = Long.valueOf(hiscore.getLevelOrScore(HiscoreEntry.ZULRAH));
+            Long currentRank = Long.valueOf(hiscore.getRank(HiscoreEntry.ZULRAH));
+
+            if (currentKc > oldMaxKc) {
+                maxZulrahKcByUserId.put(hiscore.getUserId(), oldMaxKc);
+            }
+
+            if (currentRank > oldMaxRank) {
+                maxZulrahRankByUserId.put(hiscore.getUserId(), oldMaxRank);
             }
         } else {
             int scurrius = orderedEntries.indexOf(HiscoreEntry.SCURRIUS);
@@ -90,8 +113,8 @@ public class MigrateData {
 
             BossEntry zulrah = new BossEntry();
             zulrah.setBoss(Boss.ZULRAH);
-            zulrah.setKillcount(-1L);
-            zulrah.setRank(-1L);
+            zulrah.setKillcount(maxZulrahKcByUserId.getOrDefault(hiscore.getUserId(), -1L));
+            zulrah.setRank(maxZulrahRankByUserId.getOrDefault(hiscore.getUserId(), -1L));
             hiscoreV2.addBoss(zulrah);
         }
 

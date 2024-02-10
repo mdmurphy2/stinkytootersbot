@@ -44,10 +44,10 @@ public class Main implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        migrateData.execute();
-//        schedulingConfiguration.schedule();
-//        discordBot.listen();
-//        hydrateJob.run();
+        schedulingConfiguration.schedule();
+        discordBot.listen();
+//        migrateData.execute();
 //        emitJob.run();
+//        hydrateJob.run();
     }
 }
