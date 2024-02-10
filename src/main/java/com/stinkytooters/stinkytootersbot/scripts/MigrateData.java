@@ -36,6 +36,9 @@ public class MigrateData {
     private static final Instant BROKEN_TIMESTAMP = LocalDateTime.of(2024, 1, 26, 13, 0)
             .atZone(ZoneId.of("America/Chicago"))
             .toInstant();
+    private static final Instant FIXED_TIMESTAMP = LocalDateTime.of(2024, 2, 10, 0, 30)
+            .atZone(ZoneId.of("America/Chicago"))
+            .toInstant();
     private static final Map<HiscoreEntry, Skill> SKILLS_MAP = getMatchingSkillsMap();
     private static final Map<HiscoreEntry, Boss> BOSSES_MAP = generateMatchingBossesMap();
 
@@ -74,7 +77,7 @@ public class MigrateData {
         hiscoreV2.setUserId(hiscore.getUserId());
 
         List<HiscoreEntry> orderedEntries = HiscoreEntry.getOrderedEntries();
-        if (hiscore.getUpdateTime().isBefore(BROKEN_TIMESTAMP)) {
+        if (hiscore.getUpdateTime().isBefore(BROKEN_TIMESTAMP) || hiscore.getUpdateTime().isAfter(FIXED_TIMESTAMP)) {
             for (HiscoreEntry entry : orderedEntries) {
                 addEntry(entry, hiscore, hiscoreV2);
             }

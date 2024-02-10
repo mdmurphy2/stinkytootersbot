@@ -9,6 +9,7 @@ public class GenerateGraphRequest {
     private int minimumXpGain;
     private String filterUser;
     private GraphType graphType;
+    private Timescale timescale;
     private boolean stOnly;
     private Skill skill;
     private Boss boss;
@@ -70,6 +71,14 @@ public class GenerateGraphRequest {
         this.graphType = graphType;
     }
 
+    public Timescale getTimescale() {
+        return timescale;
+    }
+
+    public void setTimescale(Timescale timescale) {
+        this.timescale = timescale;
+    }
+
     public static final class Builder {
         private GenerateGraphRequest generateGraphRequest;
 
@@ -113,6 +122,11 @@ public class GenerateGraphRequest {
 
         public Builder withGraphType(GraphType graphType) {
             generateGraphRequest.setGraphType(graphType);
+            return this;
+        }
+
+        public Builder withTimescale(Timescale timescale) {
+            generateGraphRequest.setTimescale(timescale);
             return this;
         }
 

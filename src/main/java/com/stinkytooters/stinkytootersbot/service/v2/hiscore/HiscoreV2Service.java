@@ -99,6 +99,7 @@ public class HiscoreV2Service {
         try {
             Instant cutoffTime = LocalDate.now().atStartOfDay(ZoneId.of("America/Chicago")).minusDays(daysBack).toInstant();
             List<HiscoreEntryData> hiscoreData = hiscoreV2Dao.getHiscoresForUserUntilCutoffTime(userId, cutoffTime);
+            logger.info("Found ({}) entries.", hiscoreData.size());
             return convertToApi(hiscoreData)
                     .stream()
                     .sorted(Comparator.comparing(HiscoreV2::getUpdateTime))

@@ -98,6 +98,7 @@ public class HiscoreV2Dao {
         MapSqlParameterSource parameters = new MapSqlParameterSource()
                 .addValue("userId", userId, Types.NUMERIC)
                 .addValue("cutoffTime", Timestamp.from(cutoffTime), Types.TIMESTAMP);
+        logger.info("{} - {}", SELECT_HISCORE_BY_USER_ID_UNTIL_TIME, parameters);
         return jdbcTemplate.query(SELECT_HISCORE_BY_USER_ID_UNTIL_TIME, parameters, HISCORE_ENTRY_ROW_MAPPER);
     }
 

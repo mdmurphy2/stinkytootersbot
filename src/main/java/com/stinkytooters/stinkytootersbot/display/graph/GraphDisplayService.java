@@ -69,7 +69,7 @@ public class GraphDisplayService {
     private static final int DEFAULT_MINIMUM_XP_GAIN = 200_000;
     private static final Skill DEFAULT_SKILL = Skill.OVERALL;
 
-    private static final String USAGE = "!graph [-d <daysBack>] [-m <minimumXpGained>] [-u <user> | -st (stinky tooters)] [-skill <skill>] [-boss <boss>] [-step]";
+    private static final String USAGE = "!graph [-d <daysBack>] [-m <minimumXpGained>] [-u <user> | -st (stinky tooters)] [-skill <skill>] [-boss <boss>] [-step] [-ts <months|days|hours>]";
     private static final String UNEXPECTED_ERROR = "An unexpected error occurred while generating a graph, please try again.";
     private static final Set<String> ST_USERS = Stream.of("st jamie", "st juicy", "st snag", "st zecuity", "me rf")
             .collect(Collectors.toSet());
@@ -154,11 +154,17 @@ public class GraphDisplayService {
             graphType = GraphType.STEP;
         }
 
+        Timescale timescale = Timescale.DAYS;
+        if (command.contains("-ts")) {
+            timescale = getTimescale(commandParts);
+        }
+
         return new GenerateGraphRequest.Builder()
                 .withDaysBack(daysBack)
                 .withMinimumXpGain(minimumXpGain)
                 .withStOnly(stOnly)
                 .withGraphType(graphType)
+                .withTimescale(timescale)
                 .withFilterUser(user)
                 .withSkil(skill)
                 .withBoss(boss)
@@ -276,6 +282,21 @@ public class GraphDisplayService {
 
     }
 
+    private Timescale getTimescale(List<String> commandParts) {
+        int timescaleSpecifier = commandParts.indexOf("-ts");
+        if (timescaleSpecifier + 1 >= commandParts.size())  {
+            throw new InvalidCommandFormatException("A timescale specifier must have a corresponding timescale.");
+        }
+
+        String timescaleCandidate = commandParts.get(timescaleSpecifier + 1).trim();
+        try {
+            return Timescale.valueOf(timescaleCandidate.toUpperCase());
+        } catch (Exception ex) {
+            throw new InvalidCommandFormatException("The value following the boss specifier (-boss) must be a boss.");
+        }
+
+    }
+
     private byte[] generateGraph(GenerateGraphRequest request) {
         List<User> users = userService.getAllUsers()
                 .stream()
@@ -296,7 +317,7 @@ public class GraphDisplayService {
 
         List<HiscoreGraphDisplayBean> graphViewBeans = new ArrayList<>();
         for (User user : users) {
-            HiscoreGraphDisplayBean graphViewBean = getHiscoreGraphViewBeanForUser(user.getId(), user.getName(), request, Timescale.DAYS);
+            HiscoreGraphDisplayBean graphViewBean = getHiscoreGraphViewBeanForUser(user.getId(), user.getName(), request, request.getTimescale());
             if (request.getBoss() != null) {
                graphViewBeans.add(graphViewBean);
             } else if (request.getSkill() != null && graphViewBean.getDelta() > request.getMinimumXpGain()){
@@ -339,12 +360,7 @@ public class GraphDisplayService {
     }
 
     private LineChart<String, Long> createLineChartFromGraphViewBeans(List<HiscoreGraphDisplayBean> hiscoreGraphDisplayBeans, GenerateGraphRequest request) {
-        hiscoreGraphDisplayBeans = hiscoreGraphDisplayBeans
-                .stream()
-                .sorted(Comparator.comparing(HiscoreGraphDisplayBean::getId))
-                .collect(Collectors.toList());
-
-        SortedSet<String> allLabels = new TreeSet<>();
+        Set<String> allLabels = new LinkedHashSet<>();
         for (HiscoreGraphDisplayBean viewBean : hiscoreGraphDisplayBeans) {
             allLabels.addAll(viewBean.getLabels());
         }
@@ -471,9 +487,11 @@ public class GraphDisplayService {
         ZonedDateTime z = ZonedDateTime.ofInstant(hiscore.getUpdateTime(), CENTRAL_ZONE_ID);
         String dateKey = "";
         if (timescale == Timescale.DAYS) {
-            dateKey = z.getMonthValue() + "-" + z.getDayOfMonth();
+            dateKey = z.getMonthValue() + "-" + z.getDayOfMonth() + "-" + z.getYear();
         } else if (timescale == Timescale.HOURS) {
-            dateKey = z.getMonthValue() + "-" + z.getDayOfMonth() + "-"  + z.getHour();
+            dateKey = z.getMonthValue() + "-" + z.getDayOfMonth() + "-"  + z.getHour() + "-" + z.getYear();
+        } else if (timescale == Timescale.MONTHS) {
+            dateKey = z.getMonthValue() + "-" + z.getYear();
         }
         return dateKey;
     }
@@ -486,6 +504,9 @@ public class GraphDisplayService {
                 labels.add(z.toLocalDate().toString());
             } else if (timescale == Timescale.HOURS){
                 labels.add(z.toLocalDateTime().truncatedTo(ChronoUnit.HOURS).toString());
+            } else if (timescale == Timescale.MONTHS) {
+                LocalDate localDate = z.toLocalDate();
+                labels.add(localDate.getMonth().toString() + " " + localDate.getYear());
             }
         }
         return new ArrayList<>(labels);
