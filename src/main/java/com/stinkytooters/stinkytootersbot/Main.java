@@ -2,6 +2,7 @@ package com.stinkytooters.stinkytootersbot;
 
 import com.stinkytooters.stinkytootersbot.jobs.hiscores.EmitDaysHiscoresToDiscordJob;
 import com.stinkytooters.stinkytootersbot.jobs.hiscores.HydrateHiscoresJob;
+import com.stinkytooters.stinkytootersbot.scripts.FixupZulrahData;
 import com.stinkytooters.stinkytootersbot.scripts.MigrateData;
 import com.stinkytooters.stinkytootersbot.bot.DiscordBot;
 import com.stinkytooters.stinkytootersbot.jobs.SchedulingConfiguration;
@@ -25,13 +26,7 @@ public class Main implements CommandLineRunner {
     private SchedulingConfiguration schedulingConfiguration;
 
     @Inject
-    private MigrateData migrateData;
-
-    @Inject
-    private EmitDaysHiscoresToDiscordJob emitJob;
-
-    @Inject
-    private HydrateHiscoresJob hydrateJob;
+    private FixupZulrahData fixupZulrahData;
 
 
     public static void main(String[] args) throws IOException {
@@ -46,8 +41,5 @@ public class Main implements CommandLineRunner {
     public void run(String... args) throws Exception {
         schedulingConfiguration.schedule();
         discordBot.listen();
-//        migrateData.execute();
-//        emitJob.run();
-//        hydrateJob.run();
     }
 }

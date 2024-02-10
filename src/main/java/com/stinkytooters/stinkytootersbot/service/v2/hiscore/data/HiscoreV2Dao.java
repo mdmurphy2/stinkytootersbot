@@ -1,5 +1,8 @@
 package com.stinkytooters.stinkytootersbot.service.v2.hiscore.data;
 
+import com.stinkytooters.stinkytootersbot.api.internal.exception.ServiceException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -9,6 +12,8 @@ import org.springframework.jdbc.support.KeyHolder;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -22,6 +27,8 @@ import java.util.stream.Collectors;
 @Named
 public class HiscoreV2Dao {
 
+    private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     private static String INSERT_HISCORE_ENTRY = "insert into %s.hiscore_entry (hse_id, hse_usr_id, hse_created_timestamp)" +
             " values (nextval('%s.seq_hse_id'), :userId, current_timestamp)";
     private static String INSERT_HISCORE_ENTRY_TIMESTAMP = "insert into %s.hiscore_entry (hse_id, hse_usr_id, hse_created_timestamp)" +
@@ -30,7 +37,10 @@ public class HiscoreV2Dao {
             " hskl_xp, hskl_rank, hskl_level) values (nextval('%s.seq_hskl_id'), :recordId, :skillId, :xp, :rank, :level);";
     private static String INSERT_BOSS_ENTRY = "insert into %s.hiscore_boss_entry (hbos_id, hbos_hse_id, hbos_bos_id," +
             " hbos_killcount, hbos_rank) values (nextval('%s.seq_hbos_id'), :recordId, :bossId, :killcount, :rank);";
+    private static String UPDATE_BOSS_ENTRY = "update %s.hiscore_boss_entry set hbos_killcount = :killcount, " +
+            "hbos_rank = :rank, hbos_bos_id = :bossId where hbos_id = :recordId";
 
+    private static String SELECT_ALL_HISCORE_ENTRIES = "select * from %s.hiscore_entry";
     private static String SELECT_HISCORE_BY_ID = "select * from %s.hiscore_entry where hse_id = :id";
     private static String SELECT_HISCORE_NEAREST_TIMESTAMP = "select * from %s.hiscore_entry where hse_usr_id = :userid" +
             " and hse_created_timestamp = (select hse_created_timestamp from %s.hiscore_entry where hse_usr_id = :userid" +
@@ -52,6 +62,11 @@ public class HiscoreV2Dao {
     public HiscoreV2Dao(NamedParameterJdbcTemplate jdbcTemplate, @Value("${database.schema}") String schema) {
         this.jdbcTemplate = Objects.requireNonNull(jdbcTemplate, "JdbcTemplate is required.");
         populateSchema(schema);
+    }
+
+    public List<HiscoreEntryData> getAllHiscores() {
+        logger.debug(SELECT_ALL_HISCORE_ENTRIES);
+        return jdbcTemplate.query(SELECT_ALL_HISCORE_ENTRIES, HISCORE_ENTRY_ROW_MAPPER);
     }
 
     public HiscoreEntryData getHiscoreById(long id) {
@@ -159,11 +174,26 @@ public class HiscoreV2Dao {
         return bossEntryData;
     }
 
+    public BossEntryData updateBossEntry(BossEntryData bossEntryData) {
+        MapSqlParameterSource parameters = new MapSqlParameterSource()
+                .addValue("recordId", bossEntryData.getHiscoreEntryId(), Types.NUMERIC)
+                .addValue("bossId", bossEntryData.getBossId(), Types.NUMERIC)
+                .addValue("killcount", bossEntryData.getKillcount(), Types.NUMERIC)
+                .addValue("rank", bossEntryData.getRank(), Types.NUMERIC);
+        int rowsUpdated = jdbcTemplate.update(UPDATE_BOSS_ENTRY, parameters);
+        if (rowsUpdated != 1) {
+            throw new ServiceException("Incorrect number of rows updated when updating boss entry.");
+        }
+        return bossEntryData;
+    }
+
     private void populateSchema(String schema) {
         INSERT_HISCORE_ENTRY = String.format(INSERT_HISCORE_ENTRY, schema, schema);
         INSERT_HISCORE_ENTRY_TIMESTAMP = String.format(INSERT_HISCORE_ENTRY_TIMESTAMP, schema, schema);
         INSERT_SKILL_ENTRY = String.format(INSERT_SKILL_ENTRY, schema, schema);
         INSERT_BOSS_ENTRY = String.format(INSERT_BOSS_ENTRY, schema, schema);
+        UPDATE_BOSS_ENTRY = String.format(UPDATE_BOSS_ENTRY, schema);
+        SELECT_ALL_HISCORE_ENTRIES = String.format(SELECT_ALL_HISCORE_ENTRIES, schema);
         SELECT_HISCORE_BY_ID = String.format(SELECT_HISCORE_BY_ID, schema);
         SELECT_HISCORE_NEAREST_TIMESTAMP = String.format(SELECT_HISCORE_NEAREST_TIMESTAMP, schema, schema);
         SELECT_HISCORE_BY_USER_ID_UNTIL_TIME = String.format(SELECT_HISCORE_BY_USER_ID_UNTIL_TIME, schema);

@@ -1,6 +1,7 @@
 package com.stinkytooters.stinkytootersbot.service.v2.hiscore;
 
 import com.iwebpp.crypto.TweetNaclFast;
+import com.squareup.okhttp.internal.framed.ErrorCode;
 import com.stinkytooters.stinkytootersbot.api.internal.exception.ServiceException;
 import com.stinkytooters.stinkytootersbot.api.internal.hiscore.Boss;
 import com.stinkytooters.stinkytootersbot.api.internal.hiscore.BossEntry;
@@ -46,6 +47,19 @@ public class HiscoreV2Service {
     @Inject
     public HiscoreV2Service(HiscoreV2Dao hiscoreV2Dao) {
         this.hiscoreV2Dao = Objects.requireNonNull(hiscoreV2Dao, "HiscoreV2Dao is required.");
+    }
+
+    @Transactional(readOnly = true)
+    public List<HiscoreV2> getAllHiscores() {
+        try {
+            List<HiscoreEntryData> allHiscores = hiscoreV2Dao.getAllHiscores();
+            return convertToApi(allHiscores);
+        } catch (Exception ex) {
+            String message = "An unexpeted error occurred while getting all hiscores. %s";
+            message = String.format(message, ex.getMessage());
+            logger.error(message , ex);
+            throw new ServiceException(message, ex);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -120,6 +134,18 @@ public class HiscoreV2Service {
             message = String.format(message, hiscoreV2, ex.getMessage());
             logger.error(message, ex);
             throw new ServiceException(message, ex);
+        }
+    }
+
+    @Transactional
+    public void updateBossEntry(Long hiscoreId, BossEntry bossEntry) {
+        try {
+            hiscoreV2Dao.updateBossEntry(BossEntryData.from(hiscoreId, bossEntry));
+        } catch (Exception ex) {
+            String message = "An error occurred while updating boss entry (%d). %s";
+            message = String.format(message, bossEntry.getId(), ex.getMessage());
+            logger.error(message, ex);
+            throw new ServiceException(message);
         }
     }
 

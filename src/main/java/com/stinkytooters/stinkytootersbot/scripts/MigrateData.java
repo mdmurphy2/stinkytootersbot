@@ -86,11 +86,11 @@ public class MigrateData {
             Long currentRank = Long.valueOf(hiscore.getRank(HiscoreEntry.ZULRAH));
 
             if (currentKc > oldMaxKc) {
-                maxZulrahKcByUserId.put(hiscore.getUserId(), oldMaxKc);
+                maxZulrahKcByUserId.put(hiscore.getUserId(), currentKc);
             }
 
             if (currentRank > oldMaxRank) {
-                maxZulrahRankByUserId.put(hiscore.getUserId(), oldMaxRank);
+                maxZulrahRankByUserId.put(hiscore.getUserId(), oldMaxKc);
             }
         } else {
             int scurrius = orderedEntries.indexOf(HiscoreEntry.SCURRIUS);
