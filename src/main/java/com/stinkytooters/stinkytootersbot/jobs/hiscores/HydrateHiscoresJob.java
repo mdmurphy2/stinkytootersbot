@@ -34,6 +34,10 @@ public class HydrateHiscoresJob implements Job {
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         logger.info("Begin hydrating hiscores");
+        run();
+    }
+
+    public void run() {
         hydrateUsers(userService.getAllUsers());
     }
 

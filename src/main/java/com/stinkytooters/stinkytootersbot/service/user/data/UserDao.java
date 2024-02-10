@@ -35,7 +35,7 @@ public class UserDao {
     private NamedParameterJdbcTemplate namedJdbcTemplate;
 
     @Inject
-    public UserDao(@Value("${schema}") String schema,
+    public UserDao(@Value("${database.schema}") String schema,
                       NamedParameterJdbcTemplate namedJdbcTemplate) {
         this.namedJdbcTemplate = Objects.requireNonNull(namedJdbcTemplate, "NamedJdbcTemplate is required.");
         populateSchema(schema);

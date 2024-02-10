@@ -7,7 +7,7 @@ public class HiscoreGraphDisplayBean {
 
     private String id;
     private List<String> labels = new ArrayList<>();
-    private List<Integer> data = new ArrayList<>();
+    private List<Long> data = new ArrayList<Long>();
     private String dataLabel = "NO LABEL";
 
     public List<String> getLabels() {
@@ -18,11 +18,11 @@ public class HiscoreGraphDisplayBean {
         this.labels = labels;
     }
 
-    public List<Integer> getData() {
+    public List<Long> getData() {
         return data;
     }
 
-    public void setData(List<Integer> data) {
+    public void setData(List<Long> data) {
         this.data = data;
     }
 
@@ -42,15 +42,15 @@ public class HiscoreGraphDisplayBean {
         this.id = id;
     }
 
-    public int getDelta() {
+    public long getDelta() {
         return getMax() - getMin();
     }
 
-    public int getMin() {
+    public Long getMin() {
         return data.get(0);
     }
 
-    public int getMax() {
+    public Long getMax() {
         return data.get(data.size() - 1);
     }
 }

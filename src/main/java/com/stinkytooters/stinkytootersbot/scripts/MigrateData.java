@@ -1,125 +1,142 @@
-package com.stinkytooters.stinkytootersbot.service.user;
+package com.stinkytooters.stinkytootersbot.scripts;
 
-import com.stinkytooters.stinkytootersbot.api.internal.exception.ServiceException;
 import com.stinkytooters.stinkytootersbot.api.internal.hiscore.Boss;
 import com.stinkytooters.stinkytootersbot.api.internal.hiscore.BossEntry;
+import com.stinkytooters.stinkytootersbot.api.internal.hiscore.Hiscore;
 import com.stinkytooters.stinkytootersbot.api.internal.hiscore.HiscoreV2;
 import com.stinkytooters.stinkytootersbot.api.internal.hiscore.Skill;
 import com.stinkytooters.stinkytootersbot.api.internal.hiscore.SkillEntry;
-import com.stinkytooters.stinkytootersbot.api.internal.user.User;
-import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.OsrsHiscoreLiteData;
-import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.OsrsHiscoreLiteDataEntry;
 import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.HiscoreEntry;
-import com.stinkytooters.stinkytootersbot.clients.OsrsHiscoreLiteClient;
+import com.stinkytooters.stinkytootersbot.service.hiscore.HiscoreService;
 import com.stinkytooters.stinkytootersbot.service.v2.hiscore.HiscoreV2Service;
+import com.stinkytooters.stinkytootersbot.service.v2.hiscore.data.SkillEntryData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.lang.invoke.MethodHandles;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 @Named
-public class UserUpdateService {
-
-    public enum HiscoreReference {
-        OLD,
-        NEW
-    }
+public class MigrateData {
 
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+    private static final Instant BROKEN_TIMESTAMP = LocalDateTime.of(2024, 1, 26, 13, 0)
+            .atZone(ZoneId.of("America/Chicago"))
+            .toInstant();
     private static final Map<HiscoreEntry, Skill> SKILLS_MAP = getMatchingSkillsMap();
     private static final Map<HiscoreEntry, Boss> BOSSES_MAP = generateMatchingBossesMap();
 
-    private final UserService userService;
-    private final HiscoreV2Service hiscoreService;
-    private final OsrsHiscoreLiteClient osrsHiscoreLiteClient;
+    private final HiscoreV2Service hiscoreV2Service;
+    private final HiscoreService hiscoreService;
 
     @Inject
-    public UserUpdateService(UserService userService, HiscoreV2Service hiscoreService, OsrsHiscoreLiteClient osrsHiscoreLiteClient) {
-        this.userService = Objects.requireNonNull(userService, "UserService is required.");
+    public MigrateData(HiscoreV2Service hiscoreV2Service, HiscoreService hiscoreService) {
+        this.hiscoreV2Service = Objects.requireNonNull(hiscoreV2Service, "HiscoreV2Service is required.");
         this.hiscoreService = Objects.requireNonNull(hiscoreService, "HiscoreService is required.");
-        this.osrsHiscoreLiteClient = Objects.requireNonNull(osrsHiscoreLiteClient, "OsrsHiscoreLiteClient is required.");
     }
 
-    public Map<HiscoreReference, HiscoreV2> updateHiscoresFor(User user, Instant relativeTo) {
-        logger.info("Updating hiscores for user: {}, relative to: {}", user, relativeTo);
+    public void execute() {
+        logger.info("Executing migrate data script.");
+        List<Hiscore> hiscores = hiscoreService.getAllHiscores();
+        logger.info("Got {} legacy hiscores.", hiscores.size());
 
-        Map<HiscoreReference, HiscoreV2> scores = new HashMap<>();
-        try  {
-            User retrievedUser = userService.getUser(user);
-            scores.put(HiscoreReference.OLD, getHiscoreRelativeToOrEmpty(retrievedUser, relativeTo));
-
-            Optional<OsrsHiscoreLiteData> hiscoreDataOptional = osrsHiscoreLiteClient.getHiscoresForUser(user.getName());
-            if (hiscoreDataOptional.isEmpty()) {
-                String message = String.format("Cannot update user (%s). There was an issue communicating with OSRS hiscores.", user.getName());
-                logger.warn(message);
-                throw new ServiceException(message);
-            }
-
-            OsrsHiscoreLiteData data = hiscoreDataOptional.get();
-            HiscoreV2 hiscore = buildHiscoreFromHiscoreData(data);
-            hiscore.setUserId(retrievedUser.getId());
-
-            HiscoreV2 newHiscore = hiscoreService.insertHiscore(hiscore);
-            scores.put(HiscoreReference.NEW, newHiscore);
-            logger.info("Returning scores: {}", scores);
-
-            return scores;
-        } catch (ServiceException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            String message = String.format("An unexpected error occurred while updating hiscores for user (%s)", user.getName());
-            logger.error(message, ex);
-            throw new ServiceException(message);
+        List<HiscoreV2> newHiscores = new ArrayList<>();
+        for (Hiscore hiscore : hiscores) {
+            newHiscores.add(convertOldHiscoreToNewHiscore(hiscore));
         }
+
+        hiscoreV2Service.bulkInsertHiscoreRespectingTimestamp(newHiscores);
+        logger.info("data migration done.");
     }
 
-    private HiscoreV2 buildHiscoreFromHiscoreData(OsrsHiscoreLiteData data) {
-        HiscoreV2 hiscore = new HiscoreV2();
-        for (HiscoreEntry hiscoreEntry : HiscoreEntry.getOrderedEntries()) {
-            OsrsHiscoreLiteDataEntry entry = data.getEntry(hiscoreEntry);
-            if (isHiscoreEntryValid(hiscoreEntry, entry)) {
-                if (hiscoreEntry.isSkill()) {
-                    SkillEntry skillEntry = new SkillEntry();
-                    skillEntry.setXp(Long.valueOf(entry.getXp()));
-                    skillEntry.setRank(Long.valueOf(entry.getRank()));
-                    skillEntry.setLevel(Long.valueOf(entry.getLevelOrScore()));
-                    skillEntry.setSkill(SKILLS_MAP.get(hiscoreEntry));
-                    if (skillEntry.getSkill() != null) {
-                        hiscore.addSkill(skillEntry);
-                    }
+    private HiscoreV2 convertOldHiscoreToNewHiscore(Hiscore hiscore) {
+        HiscoreV2 hiscoreV2 = new HiscoreV2();
+        hiscoreV2.setUpdateTime(hiscore.getUpdateTime());
+        hiscoreV2.setUserId(hiscore.getUserId());
+
+        List<HiscoreEntry> orderedEntries = HiscoreEntry.getOrderedEntries();
+        if (hiscore.getUpdateTime().isBefore(BROKEN_TIMESTAMP)) {
+            for (HiscoreEntry entry : orderedEntries) {
+                addEntry(entry, hiscore, hiscoreV2);
+            }
+        } else {
+            int scurrius = orderedEntries.indexOf(HiscoreEntry.SCURRIUS);
+            for (int i = 0; i < orderedEntries.size() - 1; i++) {
+                HiscoreEntry original = orderedEntries.get(i);
+                HiscoreEntry update = orderedEntries.get(i + 1);
+                if (i >= scurrius) {
+                    addEntryAs(original, update, hiscore, hiscoreV2);
                 } else {
-                    BossEntry bossEntry = new BossEntry();
-                    bossEntry.setKillcount(Long.valueOf(entry.getLevelOrScore()));
-                    bossEntry.setRank(Long.valueOf(entry.getRank()));
-                    bossEntry.setBoss(BOSSES_MAP.get(hiscoreEntry));
-                    if (bossEntry.getBoss() != null) {
-                        hiscore.addBoss(bossEntry);
-                    }
+                    addEntry(original, hiscore, hiscoreV2);
                 }
-            } else {
-                String message = String.format("Detected that hiscores may not be valid. Found abnormal entry (%s) - (%s). Aborting update.", hiscoreEntry, entry);
-                logger.error(message);
-                throw new ServiceException(message);
             }
+
+            // Insert
+            BossEntry bossEntry = new BossEntry();
+            bossEntry.setBoss(Boss.SCURRIUS);
+            bossEntry.setRank(-1L);
+            bossEntry.setKillcount(-1L);
+            hiscoreV2.addBoss(bossEntry);
+
+            BossEntry zulrah = new BossEntry();
+            zulrah.setBoss(Boss.ZULRAH);
+            zulrah.setKillcount(-1L);
+            zulrah.setRank(-1L);
+            hiscoreV2.addBoss(zulrah);
         }
-        return hiscore;
+
+        return hiscoreV2;
     }
 
-    private HiscoreV2 getHiscoreRelativeToOrEmpty(User user, Instant instant) {
-        try {
-            return hiscoreService.getHiscoreNearest(user.getId(), instant);
-        } catch (ServiceException ex) {
-            return new HiscoreV2();
+    private void addEntry(HiscoreEntry entry, Hiscore hiscore, HiscoreV2 hiscoreV2) {
+        if (entry.isSkill()) {
+            SkillEntry skillEntry = new SkillEntry();
+            skillEntry.setXp(Long.valueOf(hiscore.getXp(entry)));
+            skillEntry.setRank(Long.valueOf(hiscore.getRank(entry)));
+            skillEntry.setLevel(Long.valueOf(hiscore.getLevelOrScore(entry)));
+            skillEntry.setSkill(SKILLS_MAP.get(entry));
+            if (skillEntry.getSkill() != null) {
+                hiscoreV2.addSkill(skillEntry);
+            }
+        } else {
+            BossEntry bossEntry = new BossEntry();
+            bossEntry.setKillcount(Long.valueOf(hiscore.getLevelOrScore(entry)));
+            bossEntry.setRank(Long.valueOf(hiscore.getRank(entry)));
+            bossEntry.setBoss(BOSSES_MAP.get(entry));
+            if (bossEntry.getBoss() != null) {
+                hiscoreV2.addBoss(bossEntry);
+            }
+        }
+    }
+
+    private void addEntryAs(HiscoreEntry entry, HiscoreEntry as, Hiscore hiscore, HiscoreV2 hiscoreV2) {
+        if (entry.isSkill()) {
+            SkillEntry skillEntry = new SkillEntry();
+            skillEntry.setXp(Long.valueOf(hiscore.getXp(as)));
+            skillEntry.setRank(Long.valueOf(hiscore.getRank(as)));
+            skillEntry.setLevel(Long.valueOf(hiscore.getRank(as)));
+            skillEntry.setSkill(SKILLS_MAP.get(entry));
+            if (skillEntry.getSkill() != null) {
+                hiscoreV2.addSkill(skillEntry);
+            }
+        } else {
+            BossEntry bossEntry = new BossEntry();
+            bossEntry.setKillcount(Long.valueOf(hiscore.getLevelOrScore(as)));
+            bossEntry.setRank(Long.valueOf(hiscore.getRank(as)));
+            bossEntry.setBoss(BOSSES_MAP.get(entry));
+            if (bossEntry.getBoss() != null) {
+                hiscoreV2.addBoss(bossEntry);
+            }
         }
     }
 
@@ -216,16 +233,5 @@ public class UserUpdateService {
         map.put(HiscoreEntry.ZULRAH, Boss.ZULRAH);
         return map;
     }
-
-    private boolean isHiscoreEntryValid(HiscoreEntry hiscoreEntry, OsrsHiscoreLiteDataEntry entry) {
-        // If overall xp is 0, it's probably a bad entry
-        if (hiscoreEntry == HiscoreEntry.OVERALL) {
-            if (entry.getXp() <= 0) {
-                return false;
-            }
-        }
-        return true;
-    }
-
 
 }

@@ -1,6 +1,6 @@
 package com.stinkytooters.stinkytootersbot.jobs.hiscores;
 
-import com.stinkytooters.stinkytootersbot.api.internal.hiscore.Hiscore;
+import com.stinkytooters.stinkytootersbot.api.internal.hiscore.HiscoreV2;
 import com.stinkytooters.stinkytootersbot.api.internal.user.User;
 import com.stinkytooters.stinkytootersbot.api.internal.user.UserStatus;
 import com.stinkytooters.stinkytootersbot.display.beans.HiscoreDisplayBean;
@@ -73,7 +73,7 @@ public class EmitDaysHiscoresToDiscordJob implements Job {
         for (User user : usersCopy) {
             if (user.getStatus() == UserStatus.ACTIVE) {
                 try {
-                    Map<UserUpdateService.HiscoreReference, Hiscore> oldNew = userUpdateService.updateHiscoresFor(user, oneDayAgo);
+                    Map<UserUpdateService.HiscoreReference, HiscoreV2> oldNew = userUpdateService.updateHiscoresFor(user, oneDayAgo);
                     HiscoreDisplayBean displayBean = userDisplayService.makeHiscoreDisplayBean(user, oldNew);
                     discordClient.getTextChannelById(channelId).sendMessage(displayBean.getSkillsMessage()).complete();
                     discordClient.getTextChannelById(channelId).sendMessage(displayBean.getBossesMessage()).complete();

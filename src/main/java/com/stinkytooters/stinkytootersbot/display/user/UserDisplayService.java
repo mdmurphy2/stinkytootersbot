@@ -1,7 +1,11 @@
 package com.stinkytooters.stinkytootersbot.display.user;
 
 import com.stinkytooters.stinkytootersbot.api.internal.exception.ServiceException;
-import com.stinkytooters.stinkytootersbot.api.internal.hiscore.Hiscore;
+import com.stinkytooters.stinkytootersbot.api.internal.hiscore.Boss;
+import com.stinkytooters.stinkytootersbot.api.internal.hiscore.BossEntry;
+import com.stinkytooters.stinkytootersbot.api.internal.hiscore.HiscoreV2;
+import com.stinkytooters.stinkytootersbot.api.internal.hiscore.Skill;
+import com.stinkytooters.stinkytootersbot.api.internal.hiscore.SkillEntry;
 import com.stinkytooters.stinkytootersbot.api.internal.user.User;
 import com.stinkytooters.stinkytootersbot.api.internal.user.UserBuilder;
 import com.stinkytooters.stinkytootersbot.api.internal.user.UserStatus;
@@ -168,7 +172,7 @@ public class UserDisplayService {
         String username = String.join(" ", usernameParts);
         try {
             User user = UserBuilder.newBuilder().name(username).build();
-            Map<HiscoreReference, Hiscore> hiscores = userUpdateService.updateHiscoresFor(user, now);
+            Map<HiscoreReference, HiscoreV2> hiscores = userUpdateService.updateHiscoresFor(user, now);
 
             HiscoreDisplayBean hiscoreDisplayBean = makeHiscoreDisplayBean(user, hiscores);
             return Arrays.asList(
@@ -181,54 +185,76 @@ public class UserDisplayService {
         }
     }
 
-    public HiscoreDisplayBean makeHiscoreDisplayBean(User user, Map<HiscoreReference, Hiscore> hiscores) {
+    public HiscoreDisplayBean makeHiscoreDisplayBean(User user, Map<HiscoreReference, HiscoreV2> hiscores) {
         HiscoreDisplayBean bean = new HiscoreDisplayBean();
         bean.setUser(user.getName());
 
-        Hiscore newScore = hiscores.get(HiscoreReference.NEW);
-        Hiscore oldScore = hiscores.get(HiscoreReference.OLD);
+        HiscoreV2 newScore = hiscores.get(HiscoreReference.NEW);
+        HiscoreV2 oldScore = hiscores.get(HiscoreReference.OLD);
 
-        Duration timeDifference = Duration.between(oldScore.getUpdateTime(), newScore.getUpdateTime());
-        int days = (int)timeDifference.toDaysPart();
-        int hours = days * 24 + timeDifference.toHoursPart();
-        bean.setHoursSinceLastUpdate(hours);
-        bean.setMinutesSinceLastUpdate(timeDifference.toMinutesPart());
+        if (oldScore.getUpdateTime() != null) {
+            Duration timeDifference = Duration.between(oldScore.getUpdateTime(), newScore.getUpdateTime());
+            int days = (int)timeDifference.toDaysPart();
+            int hours = days * 24 + timeDifference.toHoursPart();
+            bean.setHoursSinceLastUpdate(hours);
+            bean.setMinutesSinceLastUpdate(timeDifference.toMinutesPart());
+        } else {
+            bean.setHoursSinceLastUpdate(99999);
+            bean.setMinutesSinceLastUpdate(99999);
+        }
 
-        for (HiscoreEntry hiscoreEntry : HiscoreEntry.values()) {
-            int newXp = newScore.getXp(hiscoreEntry);
-            int oldXp = oldScore.getXp(hiscoreEntry);
+        for (Skill skill : Skill.values()) {
+            SkillEntry newSkillEntry = newScore.getSkills().get(skill);
+            SkillEntry oldSkillEntry = oldScore.getSkills().get(skill);
 
-            int newLevelsOrScore = newScore.getLevelOrScore(hiscoreEntry);
-            int oldLevelsOrScore = oldScore.getLevelOrScore(hiscoreEntry);
-
-            int newRank = newScore.getRank(hiscoreEntry);
-            int oldRank = oldScore.getRank(hiscoreEntry);
-
-            String hiscoreEntryDisplayString = getHiscoreEntryDisplayString(hiscoreEntry.name());
-
-            boolean isValidEntry = false;
-            if (hiscoreEntry.isBoss()) {
-                logger.info("Boss ({}) - new levels or score ({}), old levels or score ({})", hiscoreEntry, newLevelsOrScore, oldLevelsOrScore);
-            }
-            if (hiscoreEntry.isSkill() && newXp > oldXp) {
-                bean.addXpGained(hiscoreEntryDisplayString, NumberFormat.getInstance().format(newXp - oldXp) + " xp");
-                bean.addLevelsGained(hiscoreEntryDisplayString, newLevelsOrScore - oldLevelsOrScore + " L");
-                isValidEntry = true;
-            } else if (hiscoreEntry.isBoss() && newLevelsOrScore > oldLevelsOrScore) {
-                bean.addBossScoreGained(hiscoreEntryDisplayString, newLevelsOrScore - oldLevelsOrScore + " kills");
-                isValidEntry = true;
-            }
-
-            if (isValidEntry) {
-                if (oldRank - newRank != 0) {
-                    String updatedRank = NumberFormat.getInstance().format(oldRank - newRank) + " R";
-                    if (oldRank == -1) {
+            String hiscoreEntryDisplayString = getHiscoreEntryDisplayString(skill.name());
+            if (oldSkillEntry != null) {
+                if (newSkillEntry.getXp() > oldSkillEntry.getXp()) {
+                    bean.addXpGained(hiscoreEntryDisplayString, NumberFormat.getInstance().format(newSkillEntry.getXp() - oldSkillEntry.getXp()) + " xp");
+                    bean.addLevelsGained(hiscoreEntryDisplayString, newSkillEntry.getLevel() - oldSkillEntry.getLevel() + " L");
+                }
+                if (newSkillEntry.getRank() > oldSkillEntry.getRank()) {
+                    String updatedRank = NumberFormat.getInstance().format(newSkillEntry.getRank() - oldSkillEntry.getRank()) + " R";
+                    if (oldSkillEntry.getRank() == -1) {
                         bean.addRanksGained(hiscoreEntryDisplayString, "0 R, NEW");
                     } else {
                         bean.addRanksGained(hiscoreEntryDisplayString, updatedRank);
                     }
                 } else {
                     bean.addRanksGained(hiscoreEntryDisplayString, "0 R");
+                }
+            } else {
+                if (newSkillEntry.getXp() > 0) {
+                    bean.addXpGained(hiscoreEntryDisplayString, NumberFormat.getInstance().format(newSkillEntry.getXp()) + " xp");
+                    bean.addRanksGained(hiscoreEntryDisplayString, NumberFormat.getInstance().format(newSkillEntry.getRank()) + " R");
+                    bean.addLevelsGained(hiscoreEntryDisplayString, newSkillEntry.getLevel() + " L");
+                }
+            }
+        }
+
+        for (Boss boss : Boss.values()) {
+            BossEntry newBossEntry = newScore.getBosses().get(boss);
+            BossEntry oldBossEntry = oldScore.getBosses().get(boss);
+            String hiscoreEntryDisplayString = getHiscoreEntryDisplayString(boss.name());
+            if (oldBossEntry != null) {
+                if (newBossEntry.getKillcount() > oldBossEntry.getKillcount()) {
+                    long oldBossScore = Math.max(oldBossEntry.getKillcount(), 0);
+                    bean.addBossScoreGained(hiscoreEntryDisplayString, NumberFormat.getInstance().format(newBossEntry.getKillcount() - oldBossScore) + " kills");
+                }
+                if (newBossEntry.getRank() > oldBossEntry.getRank()) {
+                    String updatedRank = NumberFormat.getInstance().format(newBossEntry.getRank() - oldBossEntry.getRank()) + " R";
+                    if (oldBossEntry.getRank() == -1) {
+                        bean.addRanksGained(hiscoreEntryDisplayString, "0 R, NEW");
+                    } else {
+                        bean.addRanksGained(hiscoreEntryDisplayString, updatedRank);
+                    }
+                } else {
+                    bean.addRanksGained(hiscoreEntryDisplayString, "0 R");
+                }
+            } else {
+                if (newBossEntry.getKillcount() > 0) {
+                    bean.addBossScoreGained(hiscoreEntryDisplayString, NumberFormat.getInstance().format(newBossEntry.getKillcount()) + " kills");
+                    bean.addRanksGained(hiscoreEntryDisplayString, NumberFormat.getInstance().format(newBossEntry.getRank()) + " R");
                 }
             }
         }

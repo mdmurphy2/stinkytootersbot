@@ -2,7 +2,6 @@ package com.stinkytooters.stinkytootersbot.service.hiscore;
 
 import com.stinkytooters.stinkytootersbot.api.internal.exception.ServiceException;
 import com.stinkytooters.stinkytootersbot.api.internal.hiscore.Hiscore;
-import com.stinkytooters.stinkytootersbot.api.internal.user.User;
 import com.stinkytooters.stinkytootersbot.service.hiscore.data.HiscoreDao;
 import com.stinkytooters.stinkytootersbot.service.hiscore.data.HiscoreData;
 import com.stinkytooters.stinkytootersbot.service.user.UserService;
@@ -29,13 +28,27 @@ public class HiscoreService {
 
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-    private final UserService userService;
     private final HiscoreDao hiscoreDao;
 
     @Inject
     public HiscoreService(HiscoreDao hiscoreDao, UserService userService) {
         this.hiscoreDao = Objects.requireNonNull(hiscoreDao, "HiscoreDao is required.");
-        this.userService = Objects.requireNonNull(userService, "UserService is required.");
+    }
+
+    @Transactional(readOnly = true)
+    public List<Hiscore> getAllHiscores() {
+        try {
+            List<HiscoreData> hiscoreData = hiscoreDao.getAllHiscores();
+            return hiscoreData.stream()
+                    .map(HiscoreData::toHiscore)
+                    .sorted(Comparator.comparing(Hiscore::getUpdateTime))
+                    .collect(Collectors.toList());
+        } catch (Exception ex) {
+            String message = "An unexpected error occurred while getting all hiscores. %s";
+            message = String.format(message, ex.getMessage());
+            logger.error(message, ex);
+            throw new ServiceException(message);
+        }
     }
 
     @Transactional(readOnly = true, noRollbackFor = Exception.class)
@@ -73,36 +86,6 @@ public class HiscoreService {
         } catch (Exception ex) {
             String message = "An unexpected error occurred while getting hiscores for user (%d) days back (%d).";
             message = String.format(message, userId, daysBack);
-            logger.error(message, ex);
-            throw new ServiceException(message);
-        }
-    }
-
-    @Transactional(readOnly = true, noRollbackFor = Exception.class)
-    public Hiscore getLatestHiscoreByUsername(User user) {
-        logger.info("Getting latest hiscore by username ({})", user.getName());
-
-        User retrievedUser;
-        try {
-            retrievedUser = userService.getUser(user);
-        } catch (ServiceException ex) {
-            String message = String.format("An unexpected error occurred while getting latest hiscore by username (%s):\n" + ex.getMessage(), user.getName());
-            logger.warn(message, ex);
-            throw new ServiceException(message);
-        }
-
-        try {
-            Optional<HiscoreData> hiscoreDataOptional = hiscoreDao.getLatestHiscoresByUserId(retrievedUser.getId());
-            if (hiscoreDataOptional.isEmpty()) {
-                String message = String.format("Could not get hiscore by username (%s), hiscore data does not exist.", user.getName());
-                logger.info(message);
-                throw new ServiceException(message);
-            }
-            return hiscoreDataOptional.get().toHiscore();
-        } catch (ServiceException ex) {
-            throw ex;
-        } catch (Exception ex) {
-            String message = String.format("An unexpected error occurred while getting latest hiscore by username (%s)", user.getName());
             logger.error(message, ex);
             throw new ServiceException(message);
         }

@@ -27,6 +27,8 @@ public class HiscoreDao {
     private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final HiscoreRowMapper hiscoreRowMapper = new HiscoreRowMapper();
 
+    private static String SELECT_ALL_HISCORES = "select * from %s.hiscores";
+
     private static String SELECT_LATEST_HISCORE_BY_USERID = "select * from (" +
             " select *, row_number() over (partition by his_userid order by his_update_time desc) as rn" +
             " from %s.hiscores ) t2 where rn = 1 and his_userid = :userId";
@@ -88,12 +90,16 @@ public class HiscoreDao {
     private NamedParameterJdbcTemplate namedJdbcTemplate;
 
     @Inject
-    public HiscoreDao(@Value("${schema}") String schema,
+    public HiscoreDao(@Value("${database.schema}") String schema,
                       NamedParameterJdbcTemplate namedJdbcTemplate) {
 
         this.namedJdbcTemplate = Objects.requireNonNull(namedJdbcTemplate, "NamedJdbcTemplate is required.");
         populateSchema(schema);
 
+    }
+
+    public List<HiscoreData> getAllHiscores() {
+        return namedJdbcTemplate.query(SELECT_ALL_HISCORES, hiscoreRowMapper);
     }
 
     public Optional<HiscoreData> getLatestHiscoresByUserId(long userId) {
@@ -548,6 +554,7 @@ public class HiscoreDao {
     }
 
     private void populateSchema(String schema) {
+        SELECT_ALL_HISCORES = String.format(SELECT_ALL_HISCORES, schema);
         SELECT_LATEST_HISCORE_BY_USERID = String.format(SELECT_LATEST_HISCORE_BY_USERID, schema);
         SELECT_HISCORE_NEAREST_TIMESTAMP = String.format(SELECT_HISCORE_NEAREST_TIMESTAMP, schema, schema);
         SELECT_HISCORE_BY_USERID_UNTIL_TIME = String.format(SELECT_HISCORE_BY_USERID_UNTIL_TIME, schema);

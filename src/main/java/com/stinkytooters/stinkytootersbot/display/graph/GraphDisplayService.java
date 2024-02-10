@@ -3,13 +3,15 @@ package com.stinkytooters.stinkytootersbot.display.graph;
 
 import com.stinkytooters.stinkytootersbot.api.discord.InvalidCommandFormatException;
 import com.stinkytooters.stinkytootersbot.api.internal.exception.ServiceException;
-import com.stinkytooters.stinkytootersbot.api.internal.hiscore.Hiscore;
+import com.stinkytooters.stinkytootersbot.api.internal.hiscore.Boss;
+import com.stinkytooters.stinkytootersbot.api.internal.hiscore.HiscoreV2;
+import com.stinkytooters.stinkytootersbot.api.internal.hiscore.Skill;
 import com.stinkytooters.stinkytootersbot.api.internal.user.User;
 import com.stinkytooters.stinkytootersbot.api.internal.user.UserStatus;
 import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.HiscoreEntry;
 import com.stinkytooters.stinkytootersbot.display.beans.HiscoreGraphDisplayBean;
-import com.stinkytooters.stinkytootersbot.service.hiscore.HiscoreService;
 import com.stinkytooters.stinkytootersbot.service.user.UserService;
+import com.stinkytooters.stinkytootersbot.service.v2.hiscore.HiscoreV2Service;
 import com.sun.javafx.collections.ObservableListWrapper;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -63,65 +65,29 @@ public class GraphDisplayService {
 
     private static final ZoneId CENTRAL_ZONE_ID = ZoneId.of("America/Chicago");
 
-    private static final String USAGE = "!graph [-d <daysBack>] [-m <minimumXpGained>] [-u <user> | -st (stinky tooters)]";
+    private static final int DEFAULT_DAYS_BACK = 7;
+    private static final int DEFAULT_MINIMUM_XP_GAIN = 200_000;
+    private static final Skill DEFAULT_SKILL = Skill.OVERALL;
+
+    private static final String USAGE = "!graph [-d <daysBack>] [-m <minimumXpGained>] [-u <user> | -st (stinky tooters)] [-skill <skill>] [-boss <boss>] [-step]";
     private static final String UNEXPECTED_ERROR = "An unexpected error occurred while generating a graph, please try again.";
     private static final Set<String> ST_USERS = Stream.of("st jamie", "st juicy", "st snag", "st zecuity", "me rf")
             .collect(Collectors.toSet());
 
-    private final HiscoreService hiscoreService;
+    private final HiscoreV2Service hiscoreService;
     private final UserService userService;
 
     @Inject
-    public GraphDisplayService(HiscoreService hiscoreService, UserService userService) {
+    public GraphDisplayService(HiscoreV2Service hiscoreService, UserService userService) {
         this.hiscoreService = Objects.requireNonNull(hiscoreService, "HiscoreService is required.");
         this.userService = Objects.requireNonNull(userService, "UserService is not required.");
     }
 
     public MessageCreateData createGraph(String command) {
         try {
-            List<String> commandParts = Arrays.stream(command.split(" ")).collect(Collectors.toList());
-
-            int daysBack = 7;
-            if (commandParts.contains("-d")) {
-                daysBack = getDaysBack(commandParts);
-            }
-
-            int minimumXpGain = 200_000;
-            if (commandParts.contains("-m")) {
-                minimumXpGain = getMinimumXpGain(commandParts);
-            }
-
-            boolean stOnly = false;
-            if (commandParts.contains("-st")) {
-                stOnly = true;
-            }
-
-            String user = null;
-            if (commandParts.contains("-u")) {
-                if (stOnly) {
-                    return generateUsageMessage("Graph can command can take either '-u' or '-st' but not both.");
-                }
-                user = getUser(commandParts);
-            }
-
-            HiscoreEntry hiscoreEntry = HiscoreEntry.OVERALL;
-            if (commandParts.contains("-skill")) {
-                hiscoreEntry = getSkill(commandParts);
-            }
-
-            try {
-                byte[] graph = generateGraph(daysBack, minimumXpGain, user, stOnly, hiscoreEntry);
-                if (graph != null && graph.length > 0) {
-                    return generateGraphMessage(graph);
-                } else {
-                    logger.error("Graph for command ({}) was null or empty after generating.", command);
-                    return generateUnexpectedErrorMessage();
-                }
-            } catch (GraphGenerationException ex) {
-                String message = String.format("An error occurred while generating a graph. (%s).", ex.getMessage());
-                logger.warn(message);
-                return generateUsageMessage(ex.getMessage());
-            }
+            GenerateGraphRequest request = parseParameters(command);
+            validateGenerateGraphRequest(request);
+            return tryGenerateGraph(command, request);
         } catch (InvalidCommandFormatException ex) {
             String message = String.format("Given command (%s) was an invalid format. %s", command, ex.getMessage());
             logger.warn(message);
@@ -132,6 +98,87 @@ public class GraphDisplayService {
             return generateUnexpectedErrorMessage();
         }
 
+    }
+
+    private MessageCreateData tryGenerateGraph(String command, GenerateGraphRequest request) {
+        try {
+            byte[] graph = generateGraph(request);
+            if (graph != null && graph.length > 0) {
+                return generateGraphMessage(graph);
+            } else {
+                logger.error("Graph for command ({}) was null or empty after generating.", command);
+                return generateUnexpectedErrorMessage();
+            }
+        } catch (GraphGenerationException ex) {
+            String message = String.format("An error occurred while generating a graph. (%s).", ex.getMessage());
+            logger.warn(message);
+            return generateUsageMessage(ex.getMessage());
+        }
+    }
+
+
+    private GenerateGraphRequest parseParameters(String command) {
+        List<String> commandParts = Arrays.stream(command.split(" ")).collect(Collectors.toList());
+        int daysBack = DEFAULT_DAYS_BACK;
+        if (commandParts.contains("-d")) {
+            daysBack = getDaysBack(commandParts);
+        }
+
+        int minimumXpGain = DEFAULT_MINIMUM_XP_GAIN;
+        if (commandParts.contains("-m")) {
+            minimumXpGain = getMinimumXpGain(commandParts);
+        }
+
+        boolean stOnly = false;
+        if (commandParts.contains("-st")) {
+            stOnly = true;
+        }
+
+        String user = null;
+        if (commandParts.contains("-u")) {
+            user = getUser(commandParts);
+        }
+
+        Skill skill = null;
+        if (commandParts.contains("-skill")) {
+            skill = getSkill(commandParts);
+        }
+
+        Boss boss = null;
+        if (commandParts.contains("-boss")) {
+            boss = getBoss(commandParts);
+        }
+
+        GraphType graphType = GraphType.LINE;
+        if (commandParts.contains("-step")) {
+            graphType = GraphType.STEP;
+        }
+
+        return new GenerateGraphRequest.Builder()
+                .withDaysBack(daysBack)
+                .withMinimumXpGain(minimumXpGain)
+                .withStOnly(stOnly)
+                .withGraphType(graphType)
+                .withFilterUser(user)
+                .withSkil(skill)
+                .withBoss(boss)
+                .build();
+    }
+
+    private void validateGenerateGraphRequest(GenerateGraphRequest request) {
+        if (request.getSkill() == null && request.getBoss() == null) {
+            request.setSkill(DEFAULT_SKILL);
+        }
+
+        if (request.getSkill() != null && request.getBoss() != null) {
+            throw new InvalidCommandFormatException("A skill and a boss cannot be specified in the same graph.");
+        }
+
+        if (request.getFilterUser() != null) {
+            if (request.isStOnly()) {
+                throw new InvalidCommandFormatException("A filter user and st only cannot both be specified.");
+            }
+        }
     }
 
     private MessageCreateData generateUsageMessage(String prefix) {
@@ -200,7 +247,7 @@ public class GraphDisplayService {
         return username;
     }
 
-    private HiscoreEntry getSkill(List<String> commandParts) {
+    private Skill getSkill(List<String> commandParts) {
         int skillSpecifier = commandParts.indexOf("-skill");
         if (skillSpecifier + 1 >= commandParts.size())  {
             throw new InvalidCommandFormatException("A skill specifier must have a corresponding skill.");
@@ -208,23 +255,38 @@ public class GraphDisplayService {
 
         String skillCandidate = commandParts.get(skillSpecifier + 1).trim();
         try {
-            return HiscoreEntry.valueOf(skillCandidate.toUpperCase());
+            return Skill.valueOf(skillCandidate.toUpperCase());
         } catch (Exception ex) {
             throw new InvalidCommandFormatException("The value following the skill specifier (-skill) must be a skill.");
         }
     }
 
-    private byte[] generateGraph(int daysBack, int mininmumXpGain, String filterUser, boolean stOnly, HiscoreEntry hiscoreEntry) {
+    private Boss getBoss(List<String> commandParts) {
+        int bossSpecifier = commandParts.indexOf("-boss");
+        if (bossSpecifier + 1 >= commandParts.size())  {
+            throw new InvalidCommandFormatException("A skill specifier must have a corresponding skill.");
+        }
+
+        String bossCandidate = commandParts.get(bossSpecifier + 1).trim();
+        try {
+            return Boss.valueOf(bossCandidate.toUpperCase());
+        } catch (Exception ex) {
+            throw new InvalidCommandFormatException("The value following the boss specifier (-boss) must be a boss.");
+        }
+
+    }
+
+    private byte[] generateGraph(GenerateGraphRequest request) {
         List<User> users = userService.getAllUsers()
                 .stream()
                 .filter(u -> u.getStatus() == UserStatus.ACTIVE)
                 .collect(Collectors.toList());
 
-        if (filterUser != null && !filterUser.isEmpty()) {
-            users = filterUser(users, filterUser);
+        if (request.getFilterUser() != null && !request.getFilterUser().isEmpty()) {
+            users = filterUser(users, request.getFilterUser());
         }
 
-        if (stOnly) {
+        if (request.isStOnly()) {
             users = filterStOnly(users);
         }
 
@@ -234,18 +296,15 @@ public class GraphDisplayService {
 
         List<HiscoreGraphDisplayBean> graphViewBeans = new ArrayList<>();
         for (User user : users) {
-            HiscoreGraphDisplayBean graphViewBean = getHiscoreGraphViewBeanForUser(user.getId(), user.getName(), hiscoreEntry, daysBack, Timescale.DAYS);
-            if (hiscoreEntry.isSkill()) {
-                if (graphViewBean.getDelta() > mininmumXpGain) {
-                    graphViewBeans.add(graphViewBean);
-                }
-            } else {
+            HiscoreGraphDisplayBean graphViewBean = getHiscoreGraphViewBeanForUser(user.getId(), user.getName(), request, Timescale.DAYS);
+            if (request.getBoss() != null) {
+               graphViewBeans.add(graphViewBean);
+            } else if (request.getSkill() != null && graphViewBean.getDelta() > request.getMinimumXpGain()){
                 graphViewBeans.add(graphViewBean);
             }
         }
 
-        LineChart<String, Integer> lineChart = createLineChartFromGraphViewBeans(graphViewBeans, hiscoreEntry);
-
+        LineChart<String, Long> lineChart = createLineChartFromGraphViewBeans(graphViewBeans, request);
         byte[] file = null;
         try {
             file = writeLineChartToMemory(lineChart).get();
@@ -255,7 +314,6 @@ public class GraphDisplayService {
             logger.error(message, ex);
             throw new ServiceException(message);
         }
-
         return file;
     }
 
@@ -280,53 +338,55 @@ public class GraphDisplayService {
         return future;
     }
 
-    private LineChart<String, Integer> createLineChartFromGraphViewBeans(List<HiscoreGraphDisplayBean> hiscoreGraphDisplayBeans, HiscoreEntry hiscoreEntry) {
-        hiscoreGraphDisplayBeans = hiscoreGraphDisplayBeans.stream().sorted(Comparator.comparing(HiscoreGraphDisplayBean::getId)).collect(Collectors.toList());
+    private LineChart<String, Long> createLineChartFromGraphViewBeans(List<HiscoreGraphDisplayBean> hiscoreGraphDisplayBeans, GenerateGraphRequest request) {
+        hiscoreGraphDisplayBeans = hiscoreGraphDisplayBeans
+                .stream()
+                .sorted(Comparator.comparing(HiscoreGraphDisplayBean::getId))
+                .collect(Collectors.toList());
 
         SortedSet<String> allLabels = new TreeSet<>();
         for (HiscoreGraphDisplayBean viewBean : hiscoreGraphDisplayBeans) {
             allLabels.addAll(viewBean.getLabels());
         }
 
-
         // Hacky setup required by java fx.
         JFXPanel panel = new JFXPanel();
-
         ObservableList<String> labels = new ObservableListWrapper<>(new ArrayList<>(allLabels));
         CategoryAxis dateAxis = new CategoryAxis(labels);
         dateAxis.setLabel("Date");
 
-        int min = hiscoreGraphDisplayBeans.stream()
-                .mapToInt(HiscoreGraphDisplayBean::getMin)
+        long min = hiscoreGraphDisplayBeans.stream()
+                .mapToLong(HiscoreGraphDisplayBean::getMin)
                 .min().orElse(0);
 
-        int max = hiscoreGraphDisplayBeans.stream()
-                .mapToInt(HiscoreGraphDisplayBean::getMax)
+        long max = hiscoreGraphDisplayBeans.stream()
+                .mapToLong(HiscoreGraphDisplayBean::getMax)
                 .max().orElse(0);
 
-        NumberAxis xpOrKcAxis;
-        if (hiscoreEntry.isSkill()) {
-            xpOrKcAxis = new NumberAxis(Math.max(roundToNearestMillion(min - 1_000_000), 0), roundToNearestMillion(max) + 1_000_000, 1_000_000);
+        NumberAxis experienceOrKillcountAxis;
+        if (request.getSkill() != null) {
+            experienceOrKillcountAxis = new NumberAxis(Math.max(roundToNearestMillion(min - 1_000_000), 0), roundToNearestMillion(max) + 1_000_000, 1_000_000);
+            experienceOrKillcountAxis.setLabel("Experience");
         } else {
-            xpOrKcAxis = new NumberAxis(Math.max(roundToNearestTen(min - 10), 0), roundToNearestTen(max) + 10, 10);
+            experienceOrKillcountAxis = new NumberAxis(Math.max(roundToNearestTen(min - 10), 0), roundToNearestTen(max) + 10, 10);
+            experienceOrKillcountAxis.setLabel("Boss KC");
         }
-        xpOrKcAxis.setLabel("XP or Boss KC");
 
-        LineChart<String, Integer> lineChart = new LineChart(dateAxis, xpOrKcAxis);
+        LineChart<String, Long> lineChart = new LineChart(dateAxis, experienceOrKillcountAxis);
         for (HiscoreGraphDisplayBean viewBean : hiscoreGraphDisplayBeans) {
-            XYChart.Series<String, Integer> series = new XYChart.Series<String, Integer>();
+            XYChart.Series<String, Long> series = new XYChart.Series<String, Long>();
             series.setName(viewBean.getId());
             for (int i = 0; i < viewBean.getData().size(); i++) {
                 String label = viewBean.getLabels().get(i);
-                int xp = viewBean.getData().get(i);
+                Long xp = viewBean.getData().get(i);
                 series.getData().add(new XYChart.Data<>(label, xp));
             }
 
             lineChart.getData().add(series);
         }
 
-        for (XYChart.Series<String, Integer> series : lineChart.getData()) {
-            for (XYChart.Data<String, Integer> data : series.getData())  {
+        for (XYChart.Series<String, Long> series : lineChart.getData()) {
+            for (XYChart.Data<String, Long> data : series.getData())  {
                 Node node = data.getNode();
                 node.setScaleX(0.25);
                 node.setScaleY(0.25);
@@ -346,37 +406,52 @@ public class GraphDisplayService {
         return ((i + 9) / 10) * 10;
     }
 
-    private HiscoreGraphDisplayBean getHiscoreGraphViewBeanForUser(Long userId, String username, HiscoreEntry hiscoreEntry, int daysBack, Timescale timescale) {
+    private HiscoreGraphDisplayBean getHiscoreGraphViewBeanForUser(Long userId, String username, GenerateGraphRequest request, Timescale timescale) {
         logger.info("Getting hiscore graph view bean for user ({}) - ({}).", userId, username);
-        Instant cutoffTime = LocalDate.now().atStartOfDay(CENTRAL_ZONE_ID).minusDays(daysBack).toInstant();
-        List<Hiscore> hiscores = hiscoreService.getHiscoresForUserDaysBack(userId, daysBack);
-
-        hiscores = filterAndSortHiscores(hiscores, hiscoreEntry, cutoffTime, timescale);
+        Instant cutoffTime = LocalDate.now().atStartOfDay(CENTRAL_ZONE_ID).minusDays(request.getDaysBack()).toInstant();
+        List<HiscoreV2> hiscores = hiscoreService.getHiscoresForUsersDaysBack(userId, request.getDaysBack());
+        hiscores = filterAndSortHiscores(hiscores, request, cutoffTime, timescale);
         List<String> labels = buildLabels(hiscores, timescale);
-        List<Integer> data = buildData(hiscores, hiscoreEntry);
-        return buildViewBean(username, labels, data, cutoffTime, hiscoreEntry);
+        List<Long> data = buildData(hiscores, request);
+        if (request.getGraphType() == GraphType.STEP) {
+            addStepwiseFunctionPoint(labels, data);
+        }
+        return buildViewBean(username, labels, data, cutoffTime, request);
     }
 
-    private List<Hiscore> filterAndSortHiscores(List<Hiscore> hiscores, HiscoreEntry hiscoreEntry, Instant furthestTime, Timescale timescale) {
-        Map<String, Hiscore> greatestScoreForTimescale = new HashMap<>();
-        for (Hiscore hiscore : hiscores) {
+    private void addStepwiseFunctionPoint(List<String> labels, List<Long> data) {
+        List<String> iterLabels = new ArrayList<>(labels);
+        List<Long> iterData = new ArrayList<>(data);
+
+        for (int i = 0; i < iterData.size() - 1; i++) {
+            // Duplicate second label and duplicate first point.
+            String secondLabel = iterLabels.get(i + 1);
+            Long firstPoint = iterData.get(i);
+            labels.add(i, secondLabel);
+            data.add(i, firstPoint);
+        }
+    }
+
+    private List<HiscoreV2> filterAndSortHiscores(List<HiscoreV2> hiscores, GenerateGraphRequest request, Instant furthestTime, Timescale timescale) {
+        Map<String, HiscoreV2> greatestScoreForTimescale = new HashMap<>();
+        for (HiscoreV2 hiscore : hiscores) {
             if (hiscore.getUpdateTime().isAfter(furthestTime)) {
                 String dateKey = getDateKey(hiscore, timescale);
 
-                int value = -1;
-                if (hiscoreEntry.isSkill()) {
-                    value = hiscore.getXp(hiscoreEntry);
-                } else if (hiscoreEntry.isBoss()) {
-                    value = hiscore.getLevelOrScore(hiscoreEntry);
+                long value = -1;
+                if (request.getSkill() != null) {
+                    value = hiscore.getSkills().get(request.getSkill()).getXp();
+                } else {
+                    value = hiscore.getBosses().get(request.getBoss()).getKillcount();
                 }
-                Hiscore scoreForTimescaleEntry = greatestScoreForTimescale.get(dateKey);
 
-                int valueInTimescale =  Integer.MIN_VALUE;
+                HiscoreV2 scoreForTimescaleEntry = greatestScoreForTimescale.get(dateKey);
+                long valueInTimescale = Integer.MIN_VALUE;
                 if (scoreForTimescaleEntry != null) {
-                    if (hiscoreEntry.isSkill()) {
-                        scoreForTimescaleEntry.getXp(hiscoreEntry);
-                    } else if (hiscoreEntry.isBoss()) {
-                        scoreForTimescaleEntry.getLevelOrScore(hiscoreEntry);
+                    if (request.getSkill() != null) {
+                        valueInTimescale = scoreForTimescaleEntry.getSkills().get(request.getSkill()).getXp();
+                    } else {
+                        valueInTimescale = hiscore.getBosses().get(request.getBoss()).getKillcount();
                     }
                 }
 
@@ -388,11 +463,11 @@ public class GraphDisplayService {
 
         return greatestScoreForTimescale.values()
                 .stream()
-                .sorted(Comparator.comparing(Hiscore::getUpdateTime))
+                .sorted(Comparator.comparing(HiscoreV2::getUpdateTime))
                 .collect(Collectors.toList());
     }
 
-    private String getDateKey(Hiscore hiscore, Timescale timescale) {
+    private String getDateKey(HiscoreV2 hiscore, Timescale timescale) {
         ZonedDateTime z = ZonedDateTime.ofInstant(hiscore.getUpdateTime(), CENTRAL_ZONE_ID);
         String dateKey = "";
         if (timescale == Timescale.DAYS) {
@@ -403,9 +478,9 @@ public class GraphDisplayService {
         return dateKey;
     }
 
-    private List<String> buildLabels(List<Hiscore> hiscores, Timescale timescale) {
+    private List<String> buildLabels(List<HiscoreV2> hiscores, Timescale timescale) {
         Set<String> labels = new LinkedHashSet<>();
-        for (Hiscore hiscore : hiscores) {
+        for (HiscoreV2 hiscore : hiscores) {
             ZonedDateTime z = ZonedDateTime.ofInstant(hiscore.getUpdateTime(), CENTRAL_ZONE_ID);
             if (timescale == Timescale.DAYS) {
                 labels.add(z.toLocalDate().toString());
@@ -416,19 +491,20 @@ public class GraphDisplayService {
         return new ArrayList<>(labels);
     }
 
-    private List<Integer> buildData(List<Hiscore> hiscores, HiscoreEntry hiscoreEntry) {
-        if (hiscoreEntry.isSkill()) {
-            return hiscores.stream().map(hs -> hs.getXp(hiscoreEntry)).collect(Collectors.toList());
+    private List<Long> buildData(List<HiscoreV2> hiscores, GenerateGraphRequest request) {
+        if (request.getSkill() != null) {
+            return hiscores.stream().map(hs -> hs.getSkills().get(request.getSkill()).getXp()).collect(Collectors.toList());
         } else {
-            return hiscores.stream().map(hs -> hs.getLevelOrScore(hiscoreEntry)).collect(Collectors.toList());
+            return hiscores.stream().map(hs -> hs.getBosses().get(request.getBoss()).getKillcount()).collect(Collectors.toList());
         }
     }
 
-    private HiscoreGraphDisplayBean buildViewBean(String username, List<String> labels, List<Integer> data, Instant furthestTime, HiscoreEntry hiscoreEntry) {
+    private HiscoreGraphDisplayBean buildViewBean(String username, List<String> labels, List<Long> data, Instant furthestTime, GenerateGraphRequest request) {
         HiscoreGraphDisplayBean viewBean = new HiscoreGraphDisplayBean();
         Instant now = Instant.now();
         Period period = Period.between(LocalDate.ofInstant(furthestTime, CENTRAL_ZONE_ID), LocalDate.ofInstant(now, CENTRAL_ZONE_ID));
-        viewBean.setDataLabel(username + " - " + period.getMonths() + " month(s) and " + period.getDays() + " day(s) (" + hiscoreEntry.name().toLowerCase() + ")");
+        String label = request.getSkill() != null ? request.getSkill().name().toLowerCase() : request.getBoss().name().toLowerCase();
+        viewBean.setDataLabel(username + " - " + period.getMonths() + " month(s) and " + period.getDays() + " day(s) (" + label + ")");
         viewBean.setId(username);
         viewBean.setLabels(labels);
         viewBean.setData(data);
