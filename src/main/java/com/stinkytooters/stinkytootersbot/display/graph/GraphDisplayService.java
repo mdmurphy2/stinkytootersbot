@@ -443,8 +443,8 @@ public class GraphDisplayService {
             // Duplicate second label and duplicate first point.
             String secondLabel = iterLabels.get(i + 1);
             Long firstPoint = iterData.get(i);
-            labels.add(i, secondLabel);
-            data.add(i, firstPoint);
+            labels.add(i + 1, secondLabel);
+            data.add(i + 1, firstPoint);
         }
     }
 
@@ -477,6 +477,7 @@ public class GraphDisplayService {
             }
         }
 
+        logger.info("Got {} deduped values", greatestScoreForTimescale.size());
         return greatestScoreForTimescale.values()
                 .stream()
                 .sorted(Comparator.comparing(HiscoreV2::getUpdateTime))
