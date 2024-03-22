@@ -239,6 +239,8 @@ public class UserUpdateService {
         map.put(HiscoreEntry.WINTERTODT, Boss.WINTERTODT);
         map.put(HiscoreEntry.ZALCANO, Boss.ZALCANO);
         map.put(HiscoreEntry.ZULRAH, Boss.ZULRAH);
+        map.put(HiscoreEntry.SOL_HEREDIT, Boss.SOL_HEREDIT);
+        map.put(HiscoreEntry.LUNAR_CHESTS, Boss.LUNAR_CHESTS);
         return map;
     }
 
