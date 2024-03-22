@@ -16,8 +16,6 @@ import com.stinkytooters.stinkytootersbot.service.hiscore.HiscoreService;
 import com.stinkytooters.stinkytootersbot.service.v2.hiscore.HiscoreV2Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -181,6 +179,7 @@ public class UserUpdateService {
     private static Map<HiscoreEntry, Boss> generateMatchingBossesMap() {
         Map<HiscoreEntry, Boss> map = new HashMap<>();
         map.put(HiscoreEntry.GOTR, Boss.GOTR);
+        map.put(HiscoreEntry.COLOSSEUM_GLORY, Boss.COLOSSEUM_GLORY);
         map.put(HiscoreEntry.ABYSSAL_SIRE, Boss.ABYSSAL_SIRE);
         map.put(HiscoreEntry.ALCHEMICAL_HYDRA, Boss.ALCHEMICAL_HYDRA);
         map.put(HiscoreEntry.ARTIO, Boss.ARTIO);
