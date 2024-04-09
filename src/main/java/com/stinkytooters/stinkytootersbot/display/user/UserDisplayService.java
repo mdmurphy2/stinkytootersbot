@@ -220,10 +220,7 @@ public class UserDisplayService {
                     //Calculate EHP
                     double ehp = (newSkillEntry.getXp() - oldSkillEntry.getXp()) / ehpData.GetEHP(skill);
 
-                    if(skill.equals(Skill.OVERALL)) {
-                        //Do nothing
-                    }
-                    else if(ehp < 0) { //Magic is "0" time so return negative. Overall is updated below for "total ehp"
+                  if(ehp < 0) { //Magic is "0" time so return negative. Overall is updated below for "total ehp"
                         bean.addEHPGained(hiscoreEntryDisplayString, "0 EHP");
                     } else {
                         totalEHP += ehp;
