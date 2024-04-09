@@ -16,12 +16,15 @@ public class HiscoreDisplayBean {
     private final Map<String, String> levelsGained;
     private final Map<String, String> ranksGained;
     private final Map<String, String> bossScoreGained;
+    private final Map<String, String> ehpGained;
 
     public HiscoreDisplayBean() {
         xpGained = new LinkedHashMap<>();
         levelsGained = new LinkedHashMap<>();
         ranksGained = new LinkedHashMap<>();
         bossScoreGained = new LinkedHashMap<>();
+        ehpGained = new LinkedHashMap<>();
+
     }
 
     public void addXpGained(String skill, String xp) {
@@ -38,6 +41,10 @@ public class HiscoreDisplayBean {
 
     public void addBossScoreGained(String boss, String ranks) {
         bossScoreGained.put(boss, ranks);
+    }
+
+    public void addEHPGained(String skill, String ehp) {
+        ehpGained.put(skill, ehp); 
     }
 
     public void setUser(String user) {
@@ -66,8 +73,9 @@ public class HiscoreDisplayBean {
 
             String xpGained = entry.getValue();
             String levelsGained = this.levelsGained.get(skill);
-            String ranksGained = this.ranksGained.get(skill);
-            toPrint.add(Arrays.asList(xpGained, levelsGained, ranksGained));
+            String ehpGained = this.ehpGained.get(skill);
+            //String ranksGained = this.ranksGained.get(skill);
+            toPrint.add(Arrays.asList(xpGained, levelsGained, ehpGained));
 
             if ((index + 1) % 3 == 0) {
                 // printing xp differences
@@ -79,9 +87,10 @@ public class HiscoreDisplayBean {
                     List<String> gainsList = toPrint.remove();
                     xpGained = gainsList.get(0);
                     levelsGained = gainsList.get(1);
-                    ranksGained = gainsList.get(2);
+                    ehpGained = gainsList.get(2);
+                    //ranksGained = gainsList.get(2);
 
-                    String gains = xpGained + " | " + levelsGained + " | " + ranksGained;
+                    String gains = xpGained + " | " + levelsGained + " | " + ehpGained;
                     message.append(gains);
                     message.append(" ".repeat(max(COLUMN_WIDTH - gains.length(), 0)));
                 }
@@ -101,9 +110,10 @@ public class HiscoreDisplayBean {
             List<String> gainsList = toPrint.remove();
             String xpGained = gainsList.get(0);
             String levelsGained = gainsList.get(1);
-            String ranksGained = gainsList.get(2);
+            String ehpGained = gainsList.get(2);
+            //String ranksGained = gainsList.get(2);
 
-            String gains = xpGained + " | " + levelsGained + " | " + ranksGained;
+            String gains = xpGained + " | " + levelsGained + " | " + ehpGained;
             message.append(gains);
             message.append(" ".repeat(COLUMN_WIDTH - gains.length()));
         }
