@@ -220,11 +220,14 @@ public class UserDisplayService {
                     //Calculate EHP
                     double ehp = (newSkillEntry.getXp() - oldSkillEntry.getXp()) / ehpData.GetEHP(skill);
 
-                    if(ehp < 0) { //Magic and Overall are "0" time so return negative. Overall is updated below for "total ehp"
-                        bean.addEHPGained(hiscoreEntryDisplayString, "0 EHB");
+                    if(skill.equals(Skill.OVERALL)) {
+                        //Do nothing
+                    }
+                    else if(ehp < 0) { //Magic is "0" time so return negative. Overall is updated below for "total ehp"
+                        bean.addEHPGained(hiscoreEntryDisplayString, "0 EHP");
                     } else {
                         totalEHP += ehp;
-                        bean.addEHPGained(hiscoreEntryDisplayString, String.format("%.2f", ehp) + " EHB");
+                        bean.addEHPGained(hiscoreEntryDisplayString, String.format("%.2f", ehp) + " EHP");
                     }
                    
                 }
@@ -277,7 +280,7 @@ public class UserDisplayService {
             }
         }
 
-        bean.addEHPGained("Overall", String.format("%.2f", totalEHP) + " EHB");
+        bean.addTotalEHPGained(String.format("%.2f", totalEHP) + " EHP");
 
         return bean;
     }

@@ -2,6 +2,8 @@ package com.stinkytooters.stinkytootersbot.display.beans;
 
 import java.util.*;
 
+import com.stinkytooters.stinkytootersbot.api.internal.hiscore.Skill;
+
 import static java.lang.Math.max;
 
 public class HiscoreDisplayBean {
@@ -45,6 +47,15 @@ public class HiscoreDisplayBean {
 
     public void addEHPGained(String skill, String ehp) {
         ehpGained.put(skill, ehp); 
+    }
+
+    public void addTotalEHPGained(String ehp) {
+        Map<String, String> clone = new LinkedHashMap<>();
+        clone.put("Overall", ehp);
+        ehpGained.remove("Overall"); //to avoid duplicate
+        clone.putAll(ehpGained);
+        ehpGained.clear();
+        ehpGained.putAll(clone);
     }
 
     public void setUser(String user) {
