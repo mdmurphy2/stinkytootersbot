@@ -10,6 +10,7 @@ import com.stinkytooters.stinkytootersbot.api.internal.user.User;
 import com.stinkytooters.stinkytootersbot.api.internal.user.UserBuilder;
 import com.stinkytooters.stinkytootersbot.api.internal.user.UserStatus;
 import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.OsrsHiscoreLiteData;
+import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.EHPData;
 import com.stinkytooters.stinkytootersbot.api.osrs.hiscores.HiscoreEntry;
 import com.stinkytooters.stinkytootersbot.clients.OsrsHiscoreLiteClient;
 import com.stinkytooters.stinkytootersbot.display.beans.HiscoreDisplayBean;
@@ -203,6 +204,9 @@ public class UserDisplayService {
             bean.setMinutesSinceLastUpdate(99999);
         }
 
+        EHPData ehpData = new EHPData();
+        double totalEHP = 0;
+
         for (Skill skill : Skill.values()) {
             SkillEntry newSkillEntry = newScore.getSkills().get(skill);
             SkillEntry oldSkillEntry = oldScore.getSkills().get(skill);
@@ -212,7 +216,20 @@ public class UserDisplayService {
                 if (newSkillEntry.getXp() > oldSkillEntry.getXp()) {
                     bean.addXpGained(hiscoreEntryDisplayString, NumberFormat.getInstance().format(newSkillEntry.getXp() - oldSkillEntry.getXp()) + " xp");
                     bean.addLevelsGained(hiscoreEntryDisplayString, newSkillEntry.getLevel() - oldSkillEntry.getLevel() + " L");
+
+                    //Calculate EHP
+                    double ehp = (newSkillEntry.getXp() - oldSkillEntry.getXp()) / ehpData.GetEHP(skill);
+
+                  if(ehp < 0) { //Magic is "0" time so return negative. Overall is updated below for "total ehp"
+                        bean.addEHPGained(hiscoreEntryDisplayString, "0 EHP");
+                    } else {
+                        totalEHP += ehp;
+                        bean.addEHPGained(hiscoreEntryDisplayString, String.format("%.2f", ehp) + " EHP");
+                    }
+                   
                 }
+                /* 
+                Disable Ranks for now, I think EHP is more practical metric BUT leaving it incase we want to add EHP. I just think the message would be too long
                 if (newSkillEntry.getRank() > oldSkillEntry.getRank()) {
                     String updatedRank = NumberFormat.getInstance().format(newSkillEntry.getRank() - oldSkillEntry.getRank()) + " R";
                     if (oldSkillEntry.getRank() == -1) {
@@ -223,10 +240,11 @@ public class UserDisplayService {
                 } else {
                     bean.addRanksGained(hiscoreEntryDisplayString, "0 R");
                 }
+                */
             } else {
                 if (newSkillEntry.getXp() > 0) {
                     bean.addXpGained(hiscoreEntryDisplayString, NumberFormat.getInstance().format(newSkillEntry.getXp()) + " xp");
-                    bean.addRanksGained(hiscoreEntryDisplayString, NumberFormat.getInstance().format(newSkillEntry.getRank()) + " R");
+                    //bean.addRanksGained(hiscoreEntryDisplayString, NumberFormat.getInstance().format(newSkillEntry.getRank()) + " R");
                     bean.addLevelsGained(hiscoreEntryDisplayString, newSkillEntry.getLevel() + " L");
                 }
             }
@@ -258,6 +276,8 @@ public class UserDisplayService {
                 }
             }
         }
+
+        bean.addTotalEHPGained(String.format("%.2f", totalEHP) + " EHP");
 
         return bean;
     }
