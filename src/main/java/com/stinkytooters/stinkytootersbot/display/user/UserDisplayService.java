@@ -218,7 +218,7 @@ public class UserDisplayService {
                     bean.addLevelsGained(hiscoreEntryDisplayString, newSkillEntry.getLevel() - oldSkillEntry.getLevel() + " L");
 
                     //Calculate EHP
-                    double ehp = (newSkillEntry.getXp() - oldSkillEntry.getXp()) / ehpData.GetEHP(skill);
+                    double ehp = (newSkillEntry.getXp() - oldSkillEntry.getXp()) / (double)ehpData.GetEHP(skill);
 
                   if(ehp < 0) { //Magic is "0" time so return negative. Overall is updated below for "total ehp"
                         bean.addEHPGained(hiscoreEntryDisplayString, "0 EHP");

@@ -47,6 +47,7 @@ public class EHPData {
         int i = 0;
         for (Skill skill : Skill.values()) {
             ehpRates.put(skill, rates[i]);
+            i++;
         }
     }
 
